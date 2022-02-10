@@ -1,9 +1,0 @@
-1- Cargar archivo comprimido con tar, con la extension .gz solamente
-2- Untilizar Content-type application/gzip
-3- Cargar stream de bytes del archivos con un open(file, rb)
-4- Utilizar metodo post y pasar el archivo con el arumento data
-OJO el archivo tiene que se de un solo uso, os sea que si se cargar y
-se envia, si se quiere hacer otro envio hay que volver a cargar el
-archivo.
-
-requests.post("https://nbi.192.168.159.10.nip.io/osm/nsd/v1/ns_descriptors_content", verify=False, headers=header, data=f)
