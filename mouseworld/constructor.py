@@ -133,18 +133,12 @@ def main(
     # Create NS package
     a = time.time()
     nsdid = osm_client.create_nsd_pkg(nspkg, scenario)
-    print(nsdid, type(nsdid))
-    exit()
+
     b = time.time()
     print("NS pkg creation time in seconds:", b-a)
 
     # Instantiate NS
-    data_instantiation = {
-        "nsName": scenario,
-        "nsdId": nsdid,
-        "vimAccountId": vimid,
-        }
-    nsid = osm_client.nslcm().create(json.dumps(data_instantiation))['id']
+    nsid = osm_client.create_ns_instance(scenario, nsdid, vimid)
 
     ns_info = osm_client.nslcm().show(nsid)
     print(ns_info['admin-status'])

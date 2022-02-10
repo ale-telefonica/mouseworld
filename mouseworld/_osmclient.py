@@ -9,7 +9,7 @@ Documentación
 """
 
 # Imports
-# import os
+import re
 import json
 from datetime import datetime as dt
 
@@ -67,16 +67,17 @@ class OSMClient(object):
             raise(e)
 
     def vim_exists(self, name):
-        # Check if xonection with VIM exist in OSM
+        # Check if conection with VIM exist in OSM
         return name in (vim['name'] for vim in self.vims().list())
 
     def get_vim_id(self, name):
         return [vim['_id'] for vim in self.vims().list() if vim['name'] == name]
 
     def get_id(self, name, _type):
+        # Get existing resources for the specified type and return only
+        # the one that match the provided name.
         obj = getattr(self, _type)
-        print(obj().list())
-        # return [resource['_id'] for resource in obj().list() if resource['name'] == name]
+        return [resource['_id'] for resource in obj().list() if re.match(f'{name}.+', resource['id'])][0]
     
     def create_pkg(self, pkg, _type, scenario):
         try:
@@ -119,6 +120,15 @@ class OSMClient(object):
         }
         return self.vims().create(json.dumps(vim_data))
     
+    def create_ns_instance(self, scenario, nsdid, vimid):
+        data_instantiation = {
+            "nsName": scenario,
+            "nsdId": nsdid,
+            "vimAccountId": vimid,
+        }
+        nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
+        return nsid
+
     def close(self):
         return self.delete_token().delete(self.auth_info["id"])
 
