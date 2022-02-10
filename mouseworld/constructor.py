@@ -138,11 +138,9 @@ def main(
     print("NS pkg creation time in seconds:", b-a)
 
     # Instantiate NS
-    nsid = osm_client.create_ns_instance(scenario, nsdid, vimid)
+    nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, wait=True)
 
     ns_info = osm_client.nslcm().show(nsid)
-    print(ns_info['admin-status'])
-    print(ns_info['nsState'])
 
     # Close clients conections
     osm_client.close()

@@ -10,6 +10,7 @@ Documentación
 
 # Imports
 import re
+import time
 import json
 from datetime import datetime as dt
 
@@ -34,6 +35,7 @@ class OSMClient(object):
         self.http_handler = None
         self.auth_info = None
         self.hostname = f'https://{credentials["OSM_URL"]}/osm'
+        self.instatiation_timeout = 120
 
     def _is_authenticated(method):
         # Decorator that ensures authentication for every request
@@ -120,13 +122,28 @@ class OSMClient(object):
         }
         return self.vims().create(json.dumps(vim_data))
     
-    def create_ns_instance(self, scenario, nsdid, vimid):
+    def create_ns_instance(self, scenario, nsdid, vimid, wait=True):
         data_instantiation = {
             "nsName": scenario,
             "nsdId": nsdid,
             "vimAccountId": vimid,
         }
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
+
+        ns_info = {}
+        print("Awaiting instatiation process to be completed")
+        if wait == True:
+            start = time.time()
+            while True:
+                ns_info = self.nslcm().show(nsid)
+                # print(".", end=" ")
+                print(ns_info['nsState'])
+                if ns_info['nsState'] == "READY":
+                    return nsid
+                now = time.time() - start
+                if now >= self.instatiation_timeout:
+                    raise TimeoutError("The instatiation process is taking to much time.")
+                time.sleep(1)
         return nsid
 
     def close(self):
