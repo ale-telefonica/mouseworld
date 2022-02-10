@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Dont upload scenario packages
+.scenarios/*
+.packages/*

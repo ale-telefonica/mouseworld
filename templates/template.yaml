@@ -1,0 +1,44 @@
+Project: 
+  Name: <Name>
+  VNF: <numero>
+  description: <optional description>
+VNFs:
+  - index: 1 
+    name: <name>
+    instaces: <number>
+    resources:
+      - ram: <amount in MB>
+        vcpu: <number of vcpus>
+        storage: <storage in GB>
+    image:
+      name: <name>
+      path: <Needed if image is not in openstack>
+    cloud-init:
+    # Here you can specify the specific parameters or a path to cloud_init file
+      path: <path to cloud init> # If this path is not set them cloud init options must be provided.
+    description: <optional description>
+Networks:
+# By default all instances are conected to admin network
+  - name: <name>
+    type: <internal or external>
+    index: <network_index>
+    connected_to: <vnf_index>
+    # instance_index: Must be less or equal that the number of instance in the vnf,
+    # cero means all instances
+    instance_index: 
+      - <instance_index> # Can be one, multiple or all instances in vnf, hence i use a list
+    description: <optional description>
+Mirroring:
+  service:
+    # instance_index: Defined following the format vnf_index.instance_index
+    instance_index: <instance_index>
+    network_index: <network_index>
+  flow:
+    instance_index: 
+    - <instance_index>
+    network_index: 
+    - <network_index>
+  description: <optional description>
+
+# Not defined yet a configuration section that is passed with juju charms
+# Config:

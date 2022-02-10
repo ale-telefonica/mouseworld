@@ -1,0 +1,9 @@
+# This credentials must be valid or the authentication process will fail
+OS_USERNAME: admin
+OS_PASSWORD: superadmin
+OS_PROJECT_NAME: Mouse
+OS_USER_DOMAIN_NAME: Default
+OS_PROJECT_DOMAIN_ID: default
+OS_PROJECT_DOMAIN_NAME: Default
+OS_AUTH_URL: http://192.168.159.7:5000/v3
+OS_IDENTITY_API_VERSION: 3
