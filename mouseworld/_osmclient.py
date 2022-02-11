@@ -136,8 +136,7 @@ class OSMClient(object):
             start = time.time()
             while True:
                 ns_info = self.nslcm().show(nsid)
-                # print(".", end=" ")
-                print(ns_info['nsState'])
+                print(".", end=" ")
                 if ns_info['nsState'] == "READY":
                     return nsid
                 now = time.time() - start
