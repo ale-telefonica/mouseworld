@@ -11,8 +11,9 @@ def make_tarfile(output_filename, source_dir):
 def extract_sw_image(vnf):
     with open(os.path.join(vnf, os.path.basename(vnf)+'d.yaml')) as vnfd:
         vnfd_yaml = load(vnfd, Loader)
-    sw_image = vnfd_yaml['vnfd']['sw-image-desc'][0]['image']
-    return sw_image
+    vdus = vnfd_yaml['vnfd']['vdu']
+    sw_images = set(vdu['sw-image-desc'] for vdu in vdus)
+    return sw_images
 
 def create_project_pkgs(project):
     vnf = os.path.join(SCENARIOS_DIR, project, project + '_vnf')
@@ -24,4 +25,5 @@ def create_project_pkgs(project):
 
 
 if __name__=='__main__':
-    create_project_pkgs('hackfest_basic')
+    sw_image, vnfpkg, nspkg = create_project_pkgs('hackfest_cloudinit')
+    

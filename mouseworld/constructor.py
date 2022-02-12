@@ -5,7 +5,7 @@
 # 4. Cargar paquetes vnf y ns
 # *. Cargar credenciales de acceso OSM
 # 5. Crear conexion con Openstack para el proyecto que se vaya a desplegar
-#   - Cargar variables de entorno desde el archivo openstack_auth.json para realizar la conexión con el proyecto especifico de openstack
+#   - Cargar variables de entorno desde el archivo openstack_access.yaml para realizar la conexión con el proyecto especifico de openstack
 #   - Comprobar que el proyecto a desplegar existe, sino añadir opcion de crearlo
 #   - Añadir conexion con vim si no existe
 # 6. Comprobar que las imagenes del paquete cargado se encuentran en Openstack
@@ -14,12 +14,12 @@
 # 8. Añadir mirroring si es solicitado
 # 9. Comprobar funcionamiento.
 
-# TODO: Add support for passing ssh public keys
+# TODO: Add support for passing ssh public keys [Not a priority]
 # TODO: Add function that create scenario folder structure and config template for that scenario base on general template
+# TODO: Añadir opcion en caso de que una vnf tenga varias vdus con imagenes distintas cada una
 
 from yaml import load, Loader
 import os
-import json
 
 import loader
 from _osmclient import OSMClient
@@ -72,7 +72,7 @@ def main(
     # que parsee template generico a osm templates, empaquete y devuelva el camino
     # a los paquetes ns y vnf
 
-    sw_image, vnfpkg, nspkg = loader.create_project_pkgs(scenario)
+    sw_images, vnfpkg, nspkg = loader.create_project_pkgs(scenario)
 
     # Load osm and openstack access credentials and validate config files
 
@@ -101,16 +101,17 @@ def main(
                 f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, please create it on OSM."))
     else:
         vimid = osm_client.get_vim_id(os_config.OS_PROJECT_NAME)[0]
-
-    if not os_client.image_exists(sw_image):
-        print(f'Image {sw_image} does not exist on VIM and need to be uploaded')
-        # Check if image exist inside the vnf/image folder on the scenario
-        image_exist, image_path = image_is_available(scenario, sw_image)
-        if image_exist:
-            print("Uploading image, this process could take a while.")
-            os_client.create_new_image(sw_image, image_path)
-        else:
-            raise(Exception(f"Image {sw_image} not found in image folder"))
+        
+    for sw_image in sw_images:
+        if not os_client.image_exists(sw_image):
+            print(f'Image {sw_image} does not exist on VIM and need to be uploaded')
+            # Check if image exist inside the vnf/image folder on the scenario
+            image_exist, image_path = image_is_available(scenario, sw_image)
+            if image_exist:
+                print("Uploading image, this process could take a while.")
+                os_client.create_new_image(sw_image, image_path)
+            else:
+                raise(Exception(f"Image {sw_image} not found in image folder"))
 
     # Create VNF package
     vnfdid = osm_client.create_vnfd_pkg(vnfpkg, scenario)
