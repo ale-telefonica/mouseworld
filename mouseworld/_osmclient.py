@@ -44,7 +44,6 @@ class OSMClient(object):
                 expires = self.auth_info["expires"]
                 if expires > dt.now().timestamp():
                     return method(self)
-            print("No authenticated")
             self.authenticate()
             return method(self)
         return wrapper
@@ -132,17 +131,25 @@ class OSMClient(object):
             "vimAccountId": vimid,
         }
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
-
+        status = "STARTING"
         ns_info = {}
         print("Awaiting instatiation process to be completed")
+        print("Instatiation state:",status)
         if wait == True:
             start = time.time()
             while True:
-                ns_info = self.nslcm().show(nsid)
-                # print(".", end=" ")
-                print(ns_info['nsState'])
-                if ns_info['nsState'] == "READY":
+                if status == "READY":
+                    print(ns_info)
                     return nsid
+                elif status == "BROKEN":
+                    raise(Exception("Error occur while instantiating network service"))
+
+                ns_info = self.nslcm().show(nsid)
+                if status != ns_info['nsState']:
+                    status = ns_info['nsState']
+                    print("Instatiation state:",status)
+                # print(".", end=" ")
+                
                 now = time.time() - start
                 if now >= self.instatiation_timeout:
                     raise TimeoutError("The instatiation process is taking to much time.")
