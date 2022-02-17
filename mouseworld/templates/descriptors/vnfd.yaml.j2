@@ -1,0 +1,85 @@
+vnfd:
+  id: {{ vnf.id }}_vnf
+  product-name: {{ vnf.id }}_vnf
+  description: {{vnf.description}}
+  provider: OSM
+  version: '1.0'
+  mgmt-cp: management_network_cp
+  df:
+  - id: default-df
+    instantiation-level:
+    - id: default-instantiation-level
+      vdu-level:
+      {% for vdu in vdus %}
+      {% if vdu.vnf == vnf.id %}
+      - vdu-id: {{ vdu.id }}
+        number-of-instances: 1
+      {%endif%}
+      {%endfor%}
+    vdu-profile:
+    {% for vdu in vdus %}
+    {% if vdu.vnf == vnf.id %}
+    - id: {{ vdu.id }}
+      min-number-of-instances: 1
+      max-number-of-instances: 1
+    {%endif%}
+    {%endfor%}
+  virtual-storage-desc:
+  {% for storage in storages %}
+  - id: {{storage.id}}
+    size-of-storage: "{{ storage.amount }}"
+  {%endfor%}
+  virtual-compute-desc:
+  {% for compute in computes %}
+  - id: {{ compute.id }}
+    virtual-cpu:
+      num-virtual-cpu: "{{ compute.vcpus }}"
+    virtual-memory:
+      size: "{{ compute.ram }}"
+  {%endfor%}
+  sw-image-desc:
+  {% for image in images %}
+  - id: {{ image }}
+    name: {{ image }}
+    image: {{ image }}
+  {%endfor%}
+    # At least one VDU need to be specified
+    # Additional VDUs can be created by copying the
+    # VDU descriptor below
+  vdu:
+  {% for vdu in vdus %}
+  - id: {{vdu.id}}
+    name: {{vdu.id}}
+    description: {{vdu.description}}
+    cloud-init-file: {{vdu.cloud_init_file}}
+    sw-image-desc: {{vdu.image}}
+    virtual-storage-desc:
+    - {{vdu.storage}}
+    virtual-compute-desc: {{vdu.compute}}
+    int-cpd:
+    {% for network in vdu.networks %}
+    - id: {{vdu.id}}_{{network}}_cp
+      {% if network in internal_networks %}
+      int-virtual-link-desc: {{network}}
+      {%endif%}
+      virtual-network-interface-requirement:
+      - name: {{vdu.id}}_eth{{loop.index}}
+        virtual-interface:
+          type: PARAVIRT
+    {%endfor%}
+  {%endfor%}
+  ext-cpd:
+  {% for network in external_networks %}
+  - id: {{network}}_cp
+    int-cpd:
+    {% for vdu in vdus %}
+      {% if network in vdu.external_networks %}
+      vdu-id: {{ vdu.id }}
+      cpd: {{vdu.id}}_{{network}}_cp
+      {%endif%}
+    {%endfor%}
+  {%endfor%}
+  int-virtual-link-desc:
+  {% for network in internal_networks %}
+  - id: {{network}}
+  {%endfor%}

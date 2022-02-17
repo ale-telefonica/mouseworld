@@ -93,6 +93,8 @@ class OSMClient(object):
             if http_e.args[0]['code'] == "CONFLICT":
                 print("NS package already exist, not creating")
                 return self.get_id(scenario, _type)
+            else:
+                raise(http_e)
         except Exception as e:
             raise(e)
 
@@ -100,24 +102,25 @@ class OSMClient(object):
         print("Creating NS package...")
         return self.create_pkg(nspkg, 'nsd', scenario)
 
-    def create_vnfd_pkg(self, nspkg, scenario):
+    def create_vnfd_pkg(self, vnfpkg, scenario):
         print("Creating VNF package...")
-        return self.create_pkg(nspkg, 'vnfd', scenario)  
+        return self.create_pkg(vnfpkg, 'vnfd', scenario)  
 
     def create_vim(self, os_config):
         # Method to assemble vim data
         # :os_config: Object of type Config
         # :return: json response with de result of the vim creation
         vim_data = {
-            "name": os_config.OS_PROJECT_NAME,
-            "description": f"OSM conection with Openstack project {os_config.OS_PROJECT_NAME}",
+            "name": f"{os_config.OS_PROJECT_NAME}",
+            "description": f"OSM conection with Openstack <{os_config.OS_AUTH_URL}> in project <{os_config.OS_PROJECT_NAME}>",
             "vim_type": "openstack",
             "vim_url": os_config.OS_AUTH_URL,
             "vim_tenant_name": os_config.OS_PROJECT_NAME,
             "vim_user": os_config.OS_USERNAME,
             "vim_password": os_config.OS_PASSWORD,
             "config": {
-                "management_network_name": OPENSTACK_MANAGEMENT_NETWORK
+                "management_network_name": OPENSTACK_MANAGEMENT_NETWORK,
+                "disable_network_port_security": True
             }
         }
         return self.vims().create(json.dumps(vim_data))
@@ -136,7 +139,8 @@ class OSMClient(object):
             start = time.time()
             while True:
                 ns_info = self.nslcm().show(nsid)
-                print(".", end=" ")
+                # print(".", end=" ")
+                print(ns_info['nsState'])
                 if ns_info['nsState'] == "READY":
                     return nsid
                 now = time.time() - start

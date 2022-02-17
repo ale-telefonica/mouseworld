@@ -17,8 +17,8 @@ class OpenstackClient:
         # This credentials must be valid.
         self.USER = credentials["OS_USERNAME"]
         self.PASSWD = credentials["OS_PASSWORD"]
-        self.USER_DOMAIN = credentials["OS_USER_DOMAIN_NAME"].lower()
-        self.PROJECT_DOMAIN = credentials["OS_PROJECT_DOMAIN_ID"]
+        self.USER_DOMAIN = credentials["OS_USER_DOMAIN_NAME"]
+        self.PROJECT_DOMAIN = credentials["OS_PROJECT_DOMAIN_NAME"]
         self.AUTH_URL = credentials["OS_AUTH_URL"]
         self.PROJECT_NAME = credentials["OS_PROJECT_NAME"]
 
@@ -29,16 +29,17 @@ class OpenstackClient:
                 auth_url=self.AUTH_URL,
                 username=self.USER,
                 password=self.PASSWD,
-                user_domain_id=self.USER_DOMAIN,
-                project_domain_id=self.PROJECT_DOMAIN,
+                user_domain_id=self.USER_DOMAIN.lower(),
+                project_domain_id=self.PROJECT_DOMAIN.lower(),
                 project_name=self.PROJECT_NAME
             )
             self.token = self.conn.identity.get_token()
+            self.__load_headers()
             
         except Exception as e:
             print(e)
+            exit(1)
     
-        self.__load_headers()
     
     def __get_endpoint(self, service_type:str) -> str:
         preendpoint = self.conn.endpoint_for(service_type)
@@ -99,9 +100,9 @@ if __name__ == "__main__":
     from constructor import Config
     from settings import OS_ACCESS_FILE, CONFIG_DIR
 
-    os_config = Config(OS_ACCESS_FILE, CONFIG_DIR)
+    os_config = Config(OS_ACCESS_FILE, CONFIG_DIR, _type='Openstack')
     client = OpenstackClient(**os_config.config)
 
     client.connect()
-    print(client.image_exists("ubusntu2004"))
+    print(client.image_exists("ubuntu2004"))
     client.close()

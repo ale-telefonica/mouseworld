@@ -16,12 +16,12 @@
 
 # TODO: Add support for passing ssh public keys [Not a priority]
 # TODO: Add function that create scenario folder structure and config template for that scenario base on general template
-# TODO: Añadir opcion en caso de que una vnf tenga varias vdus con imagenes distintas cada una
+# TODO: Validar ns instantiation STATE. When State is diferent of BUILDING AND READY
 
 from yaml import load, Loader
 import os
 
-import loader
+from loader import PackageTool
 from _osmclient import OSMClient
 from os_client import OpenstackClient
 
@@ -60,36 +60,33 @@ def image_is_available(scenario, image):
     )
     return os.path.exists(image_path), image_path
 
-
-def main(
+def deploy(
     scenario: str,
     osm_config_file=settings.OSM_ACCESS_FILE,
     os_config_file=settings.OS_ACCESS_FILE,
     config_dir=settings.CONFIG_DIR,
     create_vim=True
 ):
-    # TODO: En el futuro en lugar de llamar create_projects_pkgs, llamar una funcion
-    # que parsee template generico a osm templates, empaquete y devuelva el camino
-    # a los paquetes ns y vnf
-
-    sw_images, vnfpkg, nspkg = loader.create_project_pkgs(scenario)
+    # Create scenario packages
+    pkg = PackageTool(scenario)
+    try:
+        pkg.build_scenario()
+    except Exception as exception:
+        pkg.clean_scenario_folder()
+        raise(exception)
 
     # Load osm and openstack access credentials and validate config files
-
     osm_config = Config(osm_config_file, config_dir, _type="OSM")
     os_config = Config(os_config_file, config_dir, _type='Openstack')
 
     # Create osmclient instance
-
     osm_client = OSMClient(**osm_config.config)
 
     # Create openstack client instance
-
     os_client = OpenstackClient(**os_config.config)
     os_client.connect()
 
     # Check if there is a vim conection with the specified name
-
     if not osm_client.vim_exists(os_config.OS_PROJECT_NAME):
         # Create vim conection
         print(
@@ -101,11 +98,11 @@ def main(
                 f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, please create it on OSM."))
     else:
         vimid = osm_client.get_vim_id(os_config.OS_PROJECT_NAME)[0]
-        
-    for sw_image in sw_images:
+
+    for sw_image in pkg.images:
         if not os_client.image_exists(sw_image):
             print(f'Image {sw_image} does not exist on VIM and need to be uploaded')
-            # Check if image exist inside the vnf/image folder on the scenario
+            # Check if image exist inside the scenario/<scenario>/image folder
             image_exist, image_path = image_is_available(scenario, sw_image)
             if image_exist:
                 print("Uploading image, this process could take a while.")
@@ -114,12 +111,13 @@ def main(
                 raise(Exception(f"Image {sw_image} not found in image folder"))
 
     # Create VNF package
-    vnfdid = osm_client.create_vnfd_pkg(vnfpkg, scenario)
+    for vnfpkg in pkg.vnfpkgs:
+        osm_client.create_vnfd_pkg(vnfpkg, scenario)
 
     # Create NS package
+    nsdid = osm_client.create_nsd_pkg(pkg.nspkg, scenario)
 
-    nsdid = osm_client.create_nsd_pkg(nspkg, scenario)
-
+    # TODO: Chequear porque no funicona NS instantiation after packages creation
     # Instantiate NS
     nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, wait=True)
 
@@ -131,4 +129,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main('hackfest_basic', create_vim=True)
+    deploy('hackfest_custom', create_vim=True)

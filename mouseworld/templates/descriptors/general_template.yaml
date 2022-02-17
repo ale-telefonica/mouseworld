@@ -1,0 +1,58 @@
+Project: 
+  Name: <Name>
+  # VNF: <numero>
+  description: <optional description>
+VNFs:
+  - id: <name> 
+    number-of-instances: <number of instances>
+    description: <optional description>
+Instances:
+# For each instance copy and paste this section below with the specific parameters of the instance
+  - id: <unique name>
+    vnf: <vnf id>
+    compute: <compute id resource>
+    storage: <storage id resource>
+    image: <name>
+    credentials: <credentials id>
+    networks:
+      - management_network
+      - <id> # Network name defined in the Networks section
+Credentials:
+  - id: <unique name>
+    password: <password>
+Compute:
+  # In case of multiple compute configuration copy and paste this section below
+  - id: <name for this resource> 
+    ram: <amount in MB> 
+    vcpus: <amount in units> 
+Storage:
+  # In case of multiple storage configuration copy and paste this section below
+  - id: <name for this resource> 
+    amount: <amount in GB> 
+Networks:
+# An internal network are the ones created by projects and are no accesible from outside
+# An external network are the onse already created in openstack accesible from outside
+# By default all instances are conected to management network
+  - id: management_network
+    type: external
+  # In case of multiple networks copy and paste the section below
+  - id: <id>
+    type: <internal or external>
+    description: <optional description>
+Mirroring:
+  service:
+    id: <name for this tap-service>
+    # instance_index: Defined following the format vnf_index.instance_index
+    instance_id: <instance_id>
+    network_id: <network_id>
+  flow:
+    id: <name for this tap-flow>
+    connection:
+    # For multiple flow conections copy and paste this section below
+      - source: <instance_id>
+      - destination: <service_id>
+    direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
+  description: <optional description>
+
+# Not defined yet a configuration section that is passed with juju charms
+# Config:
