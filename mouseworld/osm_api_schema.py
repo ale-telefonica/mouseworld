@@ -10,6 +10,10 @@ class SCHEMA(object):
     Metaclass that specify the general methods to query the different 
     resources in the OSM NBI API.
     """
+    CONTENT_TYPE = {
+        "Content-type":"application/json"
+        }
+
     def __init__(self, http_handler):
         """
         Constructor
@@ -25,7 +29,7 @@ class SCHEMA(object):
         return self._http_handler.get(f'{self.GET_SCHEMA}/{id}')
 
     def create(self, data, *args, **kwargs):
-        return self._http_handler.post(self.CREATE_SCHEMA, self.EXTRA_HEADER, data).json()
+        return self._http_handler.post(self.CREATE_SCHEMA, self.CONTENT_TYPE, data).json()
 
     def delete(self, id, *args, **kwargs):
         return self._http_handler.delete(f'{self.GET_SCHEMA}/{id}')
@@ -39,7 +43,7 @@ class Nsd(SCHEMA, object):
     """
     GET_SCHEMA = "nsd/v1/ns_descriptors"
     CREATE_SCHEMA = "nsd/v1/ns_descriptors_content"
-    EXTRA_HEADER = {
+    CONTENT_TYPE = {
         "Content-type":"application/gzip"
         }
 
@@ -52,7 +56,7 @@ class Vnfd(SCHEMA, object):
     """
     GET_SCHEMA = "vnfpkgm/v1/vnf_packages"
     CREATE_SCHEMA = "vnfpkgm/v1/vnf_packages_content"
-    EXTRA_HEADER = {
+    CONTENT_TYPE = {
         "Content-type":"application/gzip"
         }
 
@@ -65,9 +69,6 @@ class Nslcm(SCHEMA, object):
     """
     GET_SCHEMA = "nslcm/v1/ns_instances"
     CREATE_SCHEMA = "nslcm/v1/ns_instances_content"
-    EXTRA_HEADER = {
-        "Content-type":"application/json"
-        }
 
 
 class Vims(SCHEMA, object):
@@ -78,9 +79,6 @@ class Vims(SCHEMA, object):
     """
     GET_SCHEMA = "admin/v1/vims"
     CREATE_SCHEMA = "admin/v1/vim_accounts"
-    EXTRA_HEADER = {
-        "Content-type":"application/json"
-        }
 
 
 class Auth(SCHEMA, object):
@@ -91,6 +89,3 @@ class Auth(SCHEMA, object):
     """
     GET_SCHEMA = "admin/v1/tokens"
     CREATE_SCHEMA = "admin/v1/tokens"
-    EXTRA_HEADER = {
-        "Content-type":"application/json"
-        }
