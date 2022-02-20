@@ -63,7 +63,8 @@ vnfd:
       int-virtual-link-desc: {{network}}
       {%endif%}
       virtual-network-interface-requirement:
-      - name: {{vdu.id}}_eth{{loop.index}}
+      - name: {{vdu.id}}_{{network}}
+        position: {{loop.index}}
         virtual-interface:
           type: PARAVIRT
     {%endfor%}

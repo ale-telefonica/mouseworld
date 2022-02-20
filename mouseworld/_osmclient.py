@@ -139,7 +139,6 @@ class OSMClient(object):
             start = time.time()
             while True:
                 if status == "READY":
-                    print(ns_info)
                     return nsid
                 elif status == "BROKEN":
                     raise(Exception("Error occur while instantiating network service"))
@@ -185,7 +184,7 @@ class OSMClient(object):
 
 
 if __name__ == "__main__":
-    from constructor import Config
+    from mouseworld import Config
     from settings import OS_ACCESS_FILE, CONFIG_DIR
 
     osm_config = Config(OS_ACCESS_FILE, CONFIG_DIR)

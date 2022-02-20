@@ -41,6 +41,7 @@ class PackageTool(object):
 
     def build_scenario(self):
         name = self.scenario
+        self.mirroring = False
         self.vnfs = self.scenario_descriptor['VNFs']
         credentials = self.scenario_descriptor['Credentials']
         external_networks = [ n['id'] for n in self.scenario_descriptor['Networks'] if n['type'] == "external"]
@@ -90,18 +91,30 @@ class PackageTool(object):
                         cloud_init.write(self.cloud_init.render({'hostname': vdu['id'], 'password': vdu["credentials"]['password']}))
             
             vnf_params = {
-            "vnf": vnf,
-            "vdus": vdus2,
-            "external_networks": external_networks,
-            "internal_networks": internal_networks,
-            "computes": computes,
-            "storages": storages,
-            "images": self.images,
+                "vnf": vnf,
+                "vdus": vdus2,
+                "external_networks": external_networks,
+                "internal_networks": internal_networks,
+                "computes": computes,
+                "storages": storages,
+                "images": self.images,
             }
-            print("Creating vnfd")
             with open(path_to_vnf, 'w') as vnf_descriptor:
                 vnf_descriptor.write(self.vnfd.render(vnf_params))
             self.vnfd_paths.add(path_to_vnf)
+
+        if "Mirroring" in self.scenario_descriptor:
+            self.mirror = []
+            self.mirroring = self.scenario_descriptor['Mirroring']
+            services = self.mirroring['services']
+            flows = self.mirroring['flows']
+            for flow in flows:
+                flow['service'] = list(filter(lambda x: x["id"] == flow["service"], services))[0]
+                self.mirror.append(
+                    {'source':f"{flow['instance_id']}_{flow['network_id']}",
+                    'dest':f"{flow['service']['instance_id']}_{flow['service']['network_id']}",
+                    "direction": flow['direction']}
+                    )
 
         self.create_project_pkgs()
 
@@ -112,6 +125,7 @@ class PackageTool(object):
             raise(Exception("Scenario folder odes not exit, no deleting"))
 
     def create_folders(self):
+        print("Creating project directory tree")
         folders = [
             f"{self.scenario}/images", 
             f"{self.scenario_ns_path}", 
@@ -122,7 +136,7 @@ class PackageTool(object):
                 f"{self.scenario}/{vnf['id']}_vnf/charms"
             ])
         for folder in folders:
-            print("Creating:", folder)
+            
             os.makedirs(join(SCENARIOS_DIR, folder), exist_ok=True)
 
     def make_tarfile(self, output_filename, source_dir):

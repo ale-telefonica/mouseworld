@@ -60,6 +60,7 @@ def image_is_available(scenario, image):
     )
     return os.path.exists(image_path), image_path
 
+
 def deploy(
     scenario: str,
     osm_config_file=settings.OSM_ACCESS_FILE,
@@ -117,11 +118,14 @@ def deploy(
     # Create NS package
     nsdid = osm_client.create_nsd_pkg(pkg.nspkg, scenario)
 
-    # TODO: Chequear porque no funicona NS instantiation after packages creation
     # Instantiate NS
     nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, wait=True)
 
     ns_info = osm_client.nslcm().show(nsid)
+
+    if pkg.mirroring:
+        print("Creating Mirroring...")
+        list(map(os_client.create_mirror, pkg.mirror) )
 
     # Close clients conections
     osm_client.close()
