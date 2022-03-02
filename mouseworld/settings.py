@@ -11,6 +11,7 @@ CONFIG_DIR = os.path.join(BASE_PATH, 'config')
 SCENARIOS_DIR = os.path.join(BASE_PATH, 'scenarios')
 TEMPLATES_DIR = os.path.join(BASE_PATH, 'templates')
 LOG_DIR = os.path.join(BASE_PATH, 'logs')
+IMAGES_DIR = os.path.join(BASE_PATH, 'images')
 
 # File that contains OSM access credentials
 OSM_ACCESS_FILE = os.path.join(CONFIG_DIR, 'osm_access.yaml')

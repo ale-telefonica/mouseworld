@@ -20,6 +20,7 @@
 
 from yaml import load, Loader
 import os
+import glob
 
 from loader import PackageTool
 from _osmclient import OSMClient
@@ -51,14 +52,9 @@ class Config(object):
         return self.config[__name]
 
 
-def image_is_available(scenario, image):
-    image_path = os.path.join(
-        settings.SCENARIOS_DIR,
-        scenario,
-        'images',
-        image,
-    )
-    return os.path.exists(image_path), image_path
+def image_is_available( image ):
+    image_path = glob.glob(os.path.join(settings.IMAGES_DIR, image+"*"))
+    return image_path
 
 
 def deploy(
@@ -104,10 +100,10 @@ def deploy(
         if not os_client.image_exists(sw_image):
             print(f'Image {sw_image} does not exist on VIM and need to be uploaded')
             # Check if image exist inside the scenario/<scenario>/image folder
-            image_exist, image_path = image_is_available(scenario, sw_image)
-            if image_exist:
+            image_path = image_is_available(sw_image)[0]
+            if image_path:
                 print("Uploading image, this process could take a while.")
-                os_client.create_new_image(sw_image, image_path)
+                img_obj = os_client.create_new_image(sw_image, image_path)
             else:
                 raise(Exception(f"Image {sw_image} not found in image folder"))
 

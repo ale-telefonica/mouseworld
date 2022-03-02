@@ -48,6 +48,7 @@ vnfd:
     # VDU descriptor below
   vdu:
   {% for vdu in vdus %}
+  {% if vdu.vnf == vnf.id %}
   - id: {{vdu.id}}
     name: {{vdu.id}}
     description: {{vdu.description}}
@@ -68,6 +69,7 @@ vnfd:
         virtual-interface:
           type: PARAVIRT
     {%endfor%}
+    {%endif%}
   {%endfor%}
   ext-cpd:
   {% for network in external_networks %}
