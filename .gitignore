@@ -1,6 +1,7 @@
 # Dont upload scenario packages
 scenarios
 packages
+temp
 
 
 # Byte-compiled / optimized / DLL files
