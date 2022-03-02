@@ -29,9 +29,9 @@ import settings
 
 
 class Config(object):
-    def __init__(self, config_file, config_path, _type=None):
+    def __init__(self, config_file, _type=None):
         self.type = _type
-        with open(os.path.join(config_path, config_file)) as configfd:
+        with open(config_file) as configfd:
             self.config = load(configfd, Loader)
 
         self.validate_config_file()
@@ -77,8 +77,8 @@ def deploy(
         raise(exception)
 
     # Load osm and openstack access credentials and validate config files
-    osm_config = Config(osm_config_file, config_dir, _type="OSM")
-    os_config = Config(os_config_file, config_dir, _type='Openstack')
+    osm_config = Config(osm_config_file, _type="OSM")
+    os_config = Config(os_config_file, _type='Openstack')
 
     # Create osmclient instance
     osm_client = OSMClient(**osm_config.config)
