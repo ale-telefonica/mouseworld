@@ -22,7 +22,7 @@ class SCHEMA(object):
         return self._http_handler.get(f'{self.GET_SCHEMA}/{id}')
 
     def create(self, data, *args, **kwargs):
-        return self._http_handler.post(self.CREATE_SCHEMA, self.CONTENT_TYPE, data).json()
+        return self._http_handler.post(self.CREATE_SCHEMA, self.CONTENT_TYPE, data, *args, **kwargs).json()
 
     def delete(self, id, *args, **kwargs):
         return self._http_handler.delete(f'{self.GET_SCHEMA}/{id}')

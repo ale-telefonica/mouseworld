@@ -10,6 +10,7 @@ Documentación
 
 # Imports
 import re
+import os
 import time
 import json
 from datetime import datetime as dt
@@ -35,7 +36,7 @@ class OSMClient(object):
         self.http_handler = None
         self.auth_info = None
         self.hostname = f'https://{credentials["OSM_URL"]}/osm'
-        self.instatiation_timeout = 120
+        self.instatiation_timeout = 300
 
     def _is_authenticated(method):
         # Decorator that ensures authentication for every request
@@ -78,9 +79,19 @@ class OSMClient(object):
         # Get existing resources for the specified type and return only
         # the one that match the provided name.
         obj = getattr(self, _type)
-        return [resource['_id'] for resource in obj().list() if re.match(f'{name}.+', resource['id'])][0]
+        key = "name"
+        if _type == "vnfd" or _type == "nsd":
+            key = "id"
+        
+        for resource in obj().list():
+            if name == resource[key]:
+            # if re.match(f'{name}(.?)+', resource[key]):
+                return resource["_id"]
+        else:
+            return None
     
-    def create_pkg(self, pkg, _type, scenario):
+    def create_pkg(self, pkg, _type):
+        pkg_name = os.path.basename(pkg).strip("tar.gz")
         try:
             with open(pkg, 'rb') as stream:
                 if _type == "nsd":
@@ -90,20 +101,20 @@ class OSMClient(object):
                 return id
         except HTTPError as http_e:
             if http_e.args[0]['code'] == "CONFLICT":
-                print("NS package already exist, not creating")
-                return self.get_id(scenario, _type)
+                print("Package already exist, not creating")
+                return self.get_id(pkg_name, _type)
             else:
                 raise(http_e)
         except Exception as e:
             raise(e)
 
-    def create_nsd_pkg(self, nspkg, scenario):
+    def create_nsd_pkg(self, nspkg):
         print("Creating NS package...")
-        return self.create_pkg(nspkg, 'nsd', scenario)
+        return self.create_pkg(nspkg, 'nsd')
 
-    def create_vnfd_pkg(self, vnfpkg, scenario):
+    def create_vnfd_pkg(self, vnfpkg):
         print("Creating VNF package...")
-        return self.create_pkg(vnfpkg, 'vnfd', scenario)  
+        return self.create_pkg(vnfpkg, 'vnfd')  
 
     def create_vim(self, os_config):
         # Method to assemble vim data
@@ -124,12 +135,19 @@ class OSMClient(object):
         }
         return self.vims().create(json.dumps(vim_data))
     
-    def create_ns_instance(self, scenario, nsdid, vimid, wait=True):
+    def create_ns_instance(self, scenario, nsdid, vimid, external_nets, wait=True):
+        vlds = []
+        for net in external_nets:
+            net_mapping =  {"name": net, "vim-network-name": net} 
+            vlds.append(net_mapping)
+
         data_instantiation = {
             "nsName": scenario,
             "nsdId": nsdid,
             "vimAccountId": vimid,
+            "vld": vlds
         }
+
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
         status = "STARTING"
         ns_info = {}

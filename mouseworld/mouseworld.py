@@ -78,7 +78,7 @@ def deploy(
 
     # Create osmclient instance
     osm_client = OSMClient(**osm_config.config)
-
+    
     # Create openstack client instance
     os_client = OpenstackClient(**os_config.config)
     os_client.connect()
@@ -94,31 +94,33 @@ def deploy(
             raise(Exception(
                 f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, please create it on OSM."))
     else:
-        vimid = osm_client.get_vim_id(os_config.OS_PROJECT_NAME)[0]
+        vimid = osm_client.get_id(os_config.OS_PROJECT_NAME, "vims")
 
     for sw_image in pkg.images:
         if not os_client.image_exists(sw_image):
             print(f'Image {sw_image} does not exist on VIM and need to be uploaded')
             # Check if image exist inside the scenario/<scenario>/image folder
-            image_path = image_is_available(sw_image)[0]
+            image_path = image_is_available(sw_image)
             if image_path:
                 print("Uploading image, this process could take a while.")
-                img_obj = os_client.create_new_image(sw_image, image_path)
+                img_obj = os_client.create_new_image(sw_image, image_path[0])
             else:
                 raise(Exception(f"Image {sw_image} not found in image folder"))
 
     # Create VNF package
     for vnfpkg in pkg.vnfpkgs:
-        osm_client.create_vnfd_pkg(vnfpkg, scenario)
-
+        vnfdid =osm_client.create_vnfd_pkg(vnfpkg)
+        
     # Create NS package
-    nsdid = osm_client.create_nsd_pkg(pkg.nspkg, scenario)
+    nsdid = osm_client.create_nsd_pkg(pkg.nspkg)
 
     # Instantiate NS
-    nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, wait=True)
-
-    ns_info = osm_client.nslcm().show(nsid)
-
+    if not osm_client.get_id(scenario, "nslcm"):
+        nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, pkg.external_networks, wait=True)
+    else:
+        print("A NS instance already exist, please rename new NS or delete old one")
+        exit()
+        
     if pkg.mirroring:
         print("Creating Mirroring...")
         list(map(os_client.create_mirror, pkg.mirror) )
@@ -127,6 +129,11 @@ def deploy(
     osm_client.close()
     os_client.close()
 
+# def destroy(scenario):
+#     # Delete network service from OSM
+#     nslcm_id = osm_client.get_id(scenario, "nslcm")
 
 if __name__ == '__main__':
-    deploy('hackfest_custom', create_vim=True)
+    deploy('Inspire5g', create_vim=True)
+    # deploy('hackfest_custom', create_vim=True)
+    # destroy('hackfest_custom')
