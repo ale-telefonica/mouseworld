@@ -2,7 +2,7 @@
 # Author: Alejandro Martin Herve
 # Version: 1.0.0
 # -------------------------------
-# OSM API schema
+# Openstack API interaction
 from schema import SCHEMA
     
 class Tap_Service(SCHEMA, object):
