@@ -1,5 +1,5 @@
 # Dont upload scenario packages
-scenarios
+scenario/
 packages
 temp
 images

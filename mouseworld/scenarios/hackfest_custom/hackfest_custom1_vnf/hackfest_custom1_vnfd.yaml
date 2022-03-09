@@ -1,0 +1,93 @@
+vnfd:
+  id: hackfest_custom1_vnf
+  product-name: hackfest_custom1_vnf
+  description: <optional description>
+  provider: OSM
+  version: '1.0'
+  df:
+  - id: default-df
+    instantiation-level:
+    - id: default-instantiation-level
+      vdu-level:
+      - vdu-id: vm1
+        number-of-instances: 1
+      - vdu-id: vm2
+        number-of-instances: 1
+    vdu-profile:
+    - id: vm1
+      min-number-of-instances: 1
+      max-number-of-instances: 1
+    - id: vm2
+      min-number-of-instances: 1
+      max-number-of-instances: 1
+  virtual-storage-desc:
+  - id: storage1
+    size-of-storage: "20"
+  virtual-compute-desc:
+  - id: compute1
+    virtual-cpu:
+      num-virtual-cpu: "2"
+    virtual-memory:
+      size: "4"
+  sw-image-desc:
+  - id: Ubuntu2004
+    name: Ubuntu2004
+    image: Ubuntu2004
+  vdu:
+  - id: vm1
+    name: vm1
+    description: VDU description
+    cloud-init-file: vm1_cloud_init.txt
+    sw-image-desc: Ubuntu2004
+    virtual-storage-desc:
+    - storage1
+    virtual-compute-desc: compute1
+    int-cpd:
+    - id: vm1_management_network_cp
+      virtual-network-interface-requirement:
+      - name: vm1_management_network
+        position: 1
+        virtual-interface:
+          type: PARAVIRT
+    - id: vm1_internal1_cp
+      int-virtual-link-desc: internal1
+      virtual-network-interface-requirement:
+      - name: vm1_internal1
+        position: 2
+        virtual-interface:
+          type: PARAVIRT
+  - id: vm2
+    name: vm2
+    description: VDU description
+    cloud-init-file: vm2_cloud_init.txt
+    sw-image-desc: Ubuntu2004
+    virtual-storage-desc:
+    - storage1
+    virtual-compute-desc: compute1
+    int-cpd:
+    - id: vm2_management_network_cp
+      virtual-network-interface-requirement:
+      - name: vm2_management_network
+        position: 1
+        virtual-interface:
+          type: PARAVIRT
+    - id: vm2_internal2_cp
+      int-virtual-link-desc: internal2
+      virtual-network-interface-requirement:
+      - name: vm2_internal2
+        position: 2
+        virtual-interface:
+          type: PARAVIRT
+  ext-cpd:
+  - id: management_network_cp_vm1
+    int-cpd:
+      vdu-id: vm1
+      cpd: vm1_management_network_cp
+  - id: management_network_cp_vm2
+    int-cpd:
+      vdu-id: vm2
+      cpd: vm2_management_network_cp
+  int-virtual-link-desc:
+  - id: internal1
+  - id: internal2
+  mgmt-cp: management_network_cp_vm2

@@ -1,0 +1,72 @@
+Project: 
+  Name: hackfest_custom
+  description: <optional description>
+VNFs:
+  - id: hackfest_custom1
+    number-of-instances: "1"
+    description: <optional description> 
+Compute:
+  # In case of multiple compute configuration copy and paste this section below
+  - id: compute1
+    ram: "4" 
+    vcpus: "2"
+Storage:
+  # In case of multiple storage configuration copy and paste this section below
+  - id: storage1
+    amount: "20"
+Networks:
+# An internal network are the ones created by projects and are no accesible from outside
+# An external network are the onse already created in openstack accesible from outside
+# By default all instances are conected to management network
+  - id: management_network
+    type: external
+  - id: internal1
+    type: internal
+  - id: internal2
+    type: internal
+  # In case of multiple networks copy and paste the section below
+Credentials:
+# Store here credentials to access VMs
+  - id: creds1
+    password: "1234"
+Instances:
+# For each instance copy and paste this section below with the specific parameters of the instance
+  - id: vm1
+    vnf: hackfest_custom1
+    compute: compute1
+    storage: storage1
+    image: Ubuntu2004
+    credentials: creds1
+    networks:
+      - management_network
+      - internal1
+    description: "VDU description"
+  - id: vm2
+    vnf: hackfest_custom1
+    compute: compute1
+    storage: storage1
+    image: Ubuntu2004
+    credentials: creds1
+    networks:
+      - management_network
+      - internal2
+    description: "VDU description"
+Mirroring:
+# Mirroring is for now limited to only one interface in the same network
+# For multiple services copy and paste the blocl below
+  services:
+    - id: vm1_service
+      # instance_index: Defined following the format vnf_index.instance_index
+      instance_id: vm1
+      network_id: internal1
+  flows:
+  # For multiple flows copy and paste the blocl below
+    - id: vm2_flow
+      network_id: internal2
+      instance_id: vm2
+      service: vm1_service
+      direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
+  description: <optional description>
+
+# Not defined yet a configuration section that is passed with juju charms
+# Config:
