@@ -1,2 +1,0 @@
-3e06f54c8fbdc9223c88c0ebf138ed0a	hackfest_cloudinit_ns/hackfest_cloudinit_nsd.yaml
-bc681c5a4c3cdc09c013df2d2239f3d2	hackfest_cloudinit_ns/icons/osm.png

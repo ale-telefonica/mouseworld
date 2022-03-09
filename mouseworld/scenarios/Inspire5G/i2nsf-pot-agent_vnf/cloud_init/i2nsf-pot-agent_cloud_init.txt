@@ -1,9 +1,0 @@
-#cloud-config 
-hostname: i2nsf-pot-agent
-fqdn: i2nsf-pot-agent 
-manage_etc_hosts: True 
-password: debian
-chpasswd: { expire: False } 
-ssh_pwauth: True 
-timezone: Europe/Madrid 
-package_update: True 
