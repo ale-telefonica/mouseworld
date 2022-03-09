@@ -1,8 +1,8 @@
 # Dont upload scenario packages
-scenario/
-packages
-temp
-images
+/*/scenarios/**
+/*/packages
+/*/temp
+/*/images/**
 
 
 # Byte-compiled / optimized / DLL files
