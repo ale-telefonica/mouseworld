@@ -1,0 +1,94 @@
+vnfd:
+  description: A VNF consisting of 2 VDUs connected to an internal VL, and one VDU
+    with cloud-init
+  df:
+  - id: default-df
+    instantiation-level:
+    - id: default-instantiation-level
+      vdu-level:
+      - number-of-instances: 1
+        vdu-id: mgmtVM
+      - number-of-instances: 1
+        vdu-id: dataVM
+    vdu-profile:
+    - id: mgmtVM
+      min-number-of-instances: 1
+    - id: dataVM
+      min-number-of-instances: 1
+  ext-cpd:
+  - id: vnf-mgmt-ext
+    int-cpd:
+      cpd: mgmtVM-eth0-int
+      vdu-id: mgmtVM
+  - id: vnf-data-ext
+    int-cpd:
+      cpd: dataVM-xe0-int
+      vdu-id: dataVM
+  id: hackfest_cloudinit-vnf
+  int-virtual-link-desc:
+  - id: internal
+  mgmt-cp: vnf-mgmt-ext
+  product-name: hackfest_cloudinit-vnf
+  sw-image-desc:
+  - id: ubuntu16.04
+    image: ubuntu16.04
+    name: ubuntu16.04
+  vdu:
+  - cloud-init-file: cloud-config.txt
+    id: mgmtVM
+    int-cpd:
+    - id: mgmtVM-eth0-int
+      virtual-network-interface-requirement:
+      - name: mgmtVM-eth0
+        position: 1
+        virtual-interface:
+          type: PARAVIRT
+    - id: mgmtVM-eth1-int
+      int-virtual-link-desc: internal
+      virtual-network-interface-requirement:
+      - name: mgmtVM-eth1
+        position: 2
+        virtual-interface:
+          type: PARAVIRT
+    name: mgmtVM
+    sw-image-desc: ubuntu16.04
+    virtual-compute-desc: mgmtVM-compute
+    virtual-storage-desc:
+    - mgmtVM-storage
+  - id: dataVM
+    int-cpd:
+    - id: dataVM-eth0-int
+      int-virtual-link-desc: internal
+      virtual-network-interface-requirement:
+      - name: dataVM-eth0
+        position: 1
+        virtual-interface:
+          type: PARAVIRT
+    - id: dataVM-xe0-int
+      virtual-network-interface-requirement:
+      - name: dataVM-xe0
+        position: 2
+        virtual-interface:
+          type: PARAVIRT
+    name: dataVM
+    sw-image-desc: ubuntu16.04
+    virtual-compute-desc: dataVM-compute
+    virtual-storage-desc:
+    - dataVM-storage
+  version: '1.0'
+  virtual-compute-desc:
+  - id: mgmtVM-compute
+    virtual-cpu:
+      num-virtual-cpu: "1"
+    virtual-memory:
+      size: "1.0"
+  - id: dataVM-compute
+    virtual-cpu:
+      num-virtual-cpu: "1"
+    virtual-memory:
+      size: "1.0"
+  virtual-storage-desc:
+  - id: mgmtVM-storage
+    size-of-storage: "10"
+  - id: dataVM-storage
+    size-of-storage: "10"

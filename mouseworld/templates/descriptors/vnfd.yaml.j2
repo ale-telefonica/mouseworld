@@ -4,7 +4,6 @@ vnfd:
   description: {{vnf.description}}
   provider: OSM
   version: '1.0'
-  mgmt-cp: management_network_cp
   df:
   - id: default-df
     instantiation-level:
@@ -25,12 +24,12 @@ vnfd:
     {%endif%}
     {%endfor%}
   virtual-storage-desc:
-  {% for storage in storages %}
+  {% for storage in vnf.storages %}
   - id: {{storage.id}}
     size-of-storage: "{{ storage.amount }}"
   {%endfor%}
   virtual-compute-desc:
-  {% for compute in computes %}
+  {% for compute in vnf.computes %}
   - id: {{ compute.id }}
     virtual-cpu:
       num-virtual-cpu: "{{ compute.vcpus }}"
@@ -43,19 +42,17 @@ vnfd:
     name: {{ image }}
     image: {{ image }}
   {%endfor%}
-    # At least one VDU need to be specified
-    # Additional VDUs can be created by copying the
-    # VDU descriptor below
   vdu:
   {% for vdu in vdus %}
+  {% if vdu.vnf == vnf.id %}
   - id: {{vdu.id}}
     name: {{vdu.id}}
     description: {{vdu.description}}
     cloud-init-file: {{vdu.cloud_init_file}}
     sw-image-desc: {{vdu.image}}
     virtual-storage-desc:
-    - {{vdu.storage}}
-    virtual-compute-desc: {{vdu.compute}}
+    - {{vdu.storage.id}}
+    virtual-compute-desc: {{vdu.compute.id}}
     int-cpd:
     {% for network in vdu.networks %}
     - id: {{vdu.id}}_{{network}}_cp
@@ -63,23 +60,30 @@ vnfd:
       int-virtual-link-desc: {{network}}
       {%endif%}
       virtual-network-interface-requirement:
-      - name: {{vdu.id}}_eth{{loop.index}}
+      - name: {{vdu.id}}_{{network}}
+        position: {{loop.index}}
         virtual-interface:
           type: PARAVIRT
     {%endfor%}
+    {%endif%}
   {%endfor%}
   ext-cpd:
-  {% for network in external_networks %}
-  - id: {{network}}_cp
+  {% set interface = namespace(mgmt="") %}
+  {% for vdu in vdus %}
+  {% if vdu.vnf == vnf.id %}
+  {% for network in vdu.external_networks %}
+  {% if network == "management_network" %}
+  {% set interface.mgmt = network + "_cp_"+ vdu.id %}
+  {%endif%}
+  - id: {{network + "_cp_"+vdu.id}}
     int-cpd:
-    {% for vdu in vdus %}
-      {% if network in vdu.external_networks %}
       vdu-id: {{ vdu.id }}
       cpd: {{vdu.id}}_{{network}}_cp
-      {%endif%}
-    {%endfor%}
+  {%endfor%}
+  {%endif%}
   {%endfor%}
   int-virtual-link-desc:
-  {% for network in internal_networks %}
+  {% for network in vnf.internal_networks %}
   - id: {{network}}
   {%endfor%}
+  mgmt-cp: {{ interface.mgmt }}

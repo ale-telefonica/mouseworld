@@ -1,0 +1,68 @@
+Project: 
+  Name: Inspire5g
+  description: Inspire5G dinamic scenario where the core5g and the I2NSF-POT agent are deployed. 
+VNFs:
+# For each vnf copy and paste this section
+  - id: core5g
+    number-of-instances: 1
+    description: Core5g utility
+  - id: i2nsf-pot-agent
+    number-of-instances: 1
+    description: I2NSF and PoT agents
+Instances:
+# For each instance copy and paste this section below with the specific parameters of the instance
+  - id: core5g 
+    vnf: core5g
+    compute: compute-core5g
+    storage: storage-core5g
+    image: Ubuntu2004
+    credentials: ubuntu
+    networks:
+      - management_network
+      - I5G_control
+      - I5G_ipsec_internal
+  - id: i2nsf-pot-agent
+    vnf: i2nsf-pot-agent
+    compute: compute-i2nsf-pot-agent
+    storage: storage-i2nsf-pot-agent
+    image: I2NSF-PoT-Agent
+    credentials: debian 
+    networks:
+      - management_network
+      - I5G_control
+      - I5G_ipsec_internal
+      - internet_network
+Credentials:
+  - id: ubuntu
+    password: ubuntu
+  - id: debian
+    password: debian
+Compute:
+  # In case of multiple compute configuration copy and paste this section below
+  - id: compute-core5g 
+    ram: "2" 
+    vcpus: "1"
+  - id: compute-i2nsf-pot-agent
+    ram: "2"
+    vcpus: "1"
+Storage:
+  # In case of multiple storage configuration copy and paste this section below
+  - id: storage-core5g
+    amount: "20"
+  - id: storage-i2nsf-pot-agent
+    amount: "25"
+Networks:
+# An internal network are the ones created by projects and are no accesible from outside
+# An external network are the onse already created in openstack accesible from outside
+# By default all instances are conected to management network
+  - id: management_network
+    type: external
+  - id: internet_network
+    type: external
+  # In case of multiple networks copy and paste the section below
+  - id: I5G_ipsec_internal
+    type: internal
+    description: Management network for the inspire proyect machines. 
+  - id: I5G_control
+    type: internal
+    description: Network to connect the core5g with the i2nsf-agents

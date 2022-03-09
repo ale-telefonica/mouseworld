@@ -20,11 +20,15 @@ nsd:
       - id: "{{index}}"
         vnfd-id: {{ vnf.id }}_vnf
         virtual-link-connectivity:
-        {% for network in external_networks %}
+        {% for network in vnf.external_networks %}
         - virtual-link-profile-id: {{ network }}
           constituent-cpd-id:
+          {% for cp in vnf.cps %}
+          {% if network in cp.id %}
           - constituent-base-element-id: "{{index}}"
-            constituent-cpd-id: {{network}}_cp
+            constituent-cpd-id: {{cp.id}}
+          {%endif%}
+          {%endfor%}
         {%endfor%}
       {%endfor%}
     virtual-link-desc:
@@ -33,5 +37,6 @@ nsd:
     {% if network == "management_network" %}
       mgmt-network: true
     {%endif%}
+      vim-network-name: {{network}}
     {%endfor%}
 

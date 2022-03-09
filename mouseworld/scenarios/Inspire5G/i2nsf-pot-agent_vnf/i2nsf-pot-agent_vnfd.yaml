@@ -1,0 +1,82 @@
+vnfd:
+  id: i2nsf-pot-agent_vnf
+  product-name: i2nsf-pot-agent_vnf
+  description: I2NSF and PoT agents
+  provider: OSM
+  version: '1.0'
+  df:
+  - id: default-df
+    instantiation-level:
+    - id: default-instantiation-level
+      vdu-level:
+      - vdu-id: i2nsf-pot-agent
+        number-of-instances: 1
+    vdu-profile:
+    - id: i2nsf-pot-agent
+      min-number-of-instances: 1
+      max-number-of-instances: 1
+  virtual-storage-desc:
+  - id: storage-i2nsf-pot-agent
+    size-of-storage: "25"
+  virtual-compute-desc:
+  - id: compute-i2nsf-pot-agent
+    virtual-cpu:
+      num-virtual-cpu: "1"
+    virtual-memory:
+      size: "2"
+  sw-image-desc:
+  - id: Ubuntu2004
+    name: Ubuntu2004
+    image: Ubuntu2004
+  - id: I2NSF-PoT-Agent
+    name: I2NSF-PoT-Agent
+    image: I2NSF-PoT-Agent
+  vdu:
+  - id: i2nsf-pot-agent
+    name: i2nsf-pot-agent
+    description: 
+    cloud-init-file: i2nsf-pot-agent_cloud_init.txt
+    sw-image-desc: I2NSF-PoT-Agent
+    virtual-storage-desc:
+    - storage-i2nsf-pot-agent
+    virtual-compute-desc: compute-i2nsf-pot-agent
+    int-cpd:
+    - id: i2nsf-pot-agent_management_network_cp
+      virtual-network-interface-requirement:
+      - name: i2nsf-pot-agent_management_network
+        position: 1
+        virtual-interface:
+          type: PARAVIRT
+    - id: i2nsf-pot-agent_internet_network_cp
+      virtual-network-interface-requirement:
+      - name: i2nsf-pot-agent_internet_network
+        position: 2
+        virtual-interface:
+          type: PARAVIRT
+    - id: i2nsf-pot-agent_I5G_control_cp
+      int-virtual-link-desc: I5G_control
+      virtual-network-interface-requirement:
+      - name: i2nsf-pot-agent_I5G_control
+        position: 3
+        virtual-interface:
+          type: PARAVIRT
+    - id: i2nsf-pot-agent_I5G_ipsec_internal_cp
+      int-virtual-link-desc: I5G_ipsec_internal
+      virtual-network-interface-requirement:
+      - name: i2nsf-pot-agent_I5G_ipsec_internal
+        position: 4
+        virtual-interface:
+          type: PARAVIRT
+  ext-cpd:
+  - id: management_network_cp_i2nsf-pot-agent
+    int-cpd:
+      vdu-id: i2nsf-pot-agent
+      cpd: i2nsf-pot-agent_management_network_cp
+  - id: internet_network_cp_i2nsf-pot-agent
+    int-cpd:
+      vdu-id: i2nsf-pot-agent
+      cpd: i2nsf-pot-agent_internet_network_cp
+  int-virtual-link-desc:
+  - id: I5G_control
+  - id: I5G_ipsec_internal
+  mgmt-cp: management_network_cp_i2nsf-pot-agent

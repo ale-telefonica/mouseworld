@@ -1,0 +1,69 @@
+vnfd:
+  id: core5g_vnf
+  product-name: core5g_vnf
+  description: Core5g utility
+  provider: OSM
+  version: '1.0'
+  df:
+  - id: default-df
+    instantiation-level:
+    - id: default-instantiation-level
+      vdu-level:
+      - vdu-id: core5g
+        number-of-instances: 1
+    vdu-profile:
+    - id: core5g
+      min-number-of-instances: 1
+      max-number-of-instances: 1
+  virtual-storage-desc:
+  - id: storage-core5g
+    size-of-storage: "20"
+  virtual-compute-desc:
+  - id: compute-core5g
+    virtual-cpu:
+      num-virtual-cpu: "1"
+    virtual-memory:
+      size: "2"
+  sw-image-desc:
+  - id: Ubuntu2004
+    name: Ubuntu2004
+    image: Ubuntu2004
+  vdu:
+  - id: core5g
+    name: core5g
+    description: 
+    cloud-init-file: core5g_cloud_init.txt
+    sw-image-desc: Ubuntu2004
+    virtual-storage-desc:
+    - storage-core5g
+    virtual-compute-desc: compute-core5g
+    int-cpd:
+    - id: core5g_management_network_cp
+      virtual-network-interface-requirement:
+      - name: core5g_management_network
+        position: 1
+        virtual-interface:
+          type: PARAVIRT
+    - id: core5g_I5G_control_cp
+      int-virtual-link-desc: I5G_control
+      virtual-network-interface-requirement:
+      - name: core5g_I5G_control
+        position: 2
+        virtual-interface:
+          type: PARAVIRT
+    - id: core5g_I5G_ipsec_internal_cp
+      int-virtual-link-desc: I5G_ipsec_internal
+      virtual-network-interface-requirement:
+      - name: core5g_I5G_ipsec_internal
+        position: 3
+        virtual-interface:
+          type: PARAVIRT
+  ext-cpd:
+  - id: management_network_cp_core5g
+    int-cpd:
+      vdu-id: core5g
+      cpd: core5g_management_network_cp
+  int-virtual-link-desc:
+  - id: I5G_control
+  - id: I5G_ipsec_internal
+  mgmt-cp: management_network_cp_core5g

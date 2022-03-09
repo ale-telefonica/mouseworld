@@ -1,0 +1,57 @@
+Project: 
+  Name: <Name>
+  description: <optional description>
+VNFs:
+  - id: <name>
+    number-of-instances: <number of instances>
+    description: <optional description>
+Compute:
+  # In case of multiple compute configuration copy and paste this section below
+  - id: <name for this resource>
+    ram: <amount in MB>
+    vcpus: <amount in units>
+Storage:
+  # In case of multiple storage configuration copy and paste this section below
+  - id: <name for this resource>
+    amount: <amount in GB>
+Networks:
+# An internal network are the ones created by projects and are no accesible from outside
+# An external network are the onse already created in openstack accesible from outside
+# By default all instances are conected to management network
+  - id: management_network
+    type: external
+  # In case of multiple networks copy and paste the section below
+  - id: <id>
+    type: <internal or external>
+    description: <optional description>
+Instances:
+# For each instance copy and paste this section below with the specific parameters of the instance
+  - id: <unique name>
+    vnf: <vnf id>
+    compute: <compute id resource>
+    storage: <storage id resource>
+    image:
+      name: <name>
+      path: <Needed if image is not in openstack>
+    cloud-init:
+      path: <path to cloud init> # If this path is not set them cloud init options must be provided.
+    networks:
+      - management_network
+      - <id> # Network name defined in the Networks section
+Mirroring:
+# For multiple services copy and paste the blocl below
+  service:
+    - id: <service_id>
+      # instance_index: Defined following the format vnf_index.instance_index
+      instance_id: <vm_id>
+      network_id: <network_id>
+  flow:
+  # For multiple flows copy and paste the blocl below
+    - id: <vm_id>
+      network_id: <network_id>
+      destination: <service_id>
+      direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
+  description: <optional description>
+
+# Not defined yet a configuration section that is passed with juju charms
+# Config:

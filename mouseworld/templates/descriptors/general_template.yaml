@@ -1,8 +1,8 @@
 Project: 
   Name: <Name>
-  # VNF: <numero>
   description: <optional description>
 VNFs:
+# For each vnf copy and paste this section
   - id: <name> 
     number-of-instances: <number of instances>
     description: <optional description>
