@@ -1,3 +1,0 @@
-731d915b61a94a63dd5d7a61be45b788	hackfest_cloudinit_vnf/hackfest_cloudinit_vnfd.yaml
-1a16279b2a76dcf5e2f9f13302bc23c4	hackfest_cloudinit_vnf/cloud_init/cloud-config.txt
-bc681c5a4c3cdc09c013df2d2239f3d2	hackfest_cloudinit_vnf/icons/osm.png

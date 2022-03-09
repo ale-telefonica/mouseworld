@@ -1,9 +1,0 @@
-#cloud-config 
-hostname: vm2
-fqdn: vm2 
-manage_etc_hosts: True 
-password: 1234
-chpasswd: { expire: False } 
-ssh_pwauth: True 
-timezone: Europe/Madrid 
-package_update: True 
