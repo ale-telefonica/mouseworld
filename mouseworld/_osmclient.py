@@ -136,16 +136,16 @@ class OSMClient(object):
         return self.vims().create(json.dumps(vim_data))
     
     def create_ns_instance(self, scenario, nsdid, vimid, external_nets, wait=True):
-        vlds = []
-        for net in external_nets:
-            net_mapping =  {"name": net, "vim-network-name": net} 
-            vlds.append(net_mapping)
+        # vlds = []
+        # for net in external_nets:
+        #     net_mapping =  {"name": net, "vim-network-name": net} 
+        #     vlds.append(net_mapping)
 
         data_instantiation = {
             "nsName": scenario,
             "nsdId": nsdid,
             "vimAccountId": vimid,
-            "vld": vlds
+            # "vld": vlds
         }
 
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
