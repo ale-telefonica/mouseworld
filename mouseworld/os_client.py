@@ -5,10 +5,6 @@ import json
 import _http
 import os_api as api
 
-# Authentication data in json format, in case of api update modify only this dict keeping the wildcars (<wildcard>)
-# auth_data = {"auth": {"identity": {"methods": ["password"], "password": {"user": {"name": "<username>", "password": "<password>", "domain": {"id": "<user_domain_id>"}}}}, 
-#                 "scope": { "project": {"domain": {"id": "<project_domain_id>"},"name": "<project_name>"}}}}
-
 
 def http(service=""):
     def decorator(method):
@@ -21,6 +17,7 @@ def http(service=""):
             return method(self)
         return wrapper
     return decorator
+
 
 class OpenstackClient:
     """

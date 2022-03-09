@@ -2,7 +2,7 @@
 # Author: Alejandro Martin Herve
 # Version: 1.0.0
 # -------------------------------
-# OSM API schema
+# General Schema
 from schema import SCHEMA
     
 class Nsd(SCHEMA, object):
