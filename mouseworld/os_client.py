@@ -151,7 +151,7 @@ class OpenstackClient:
 
 
 if __name__ == "__main__":
-    # Section to test this section
+    # Test this setion
     from mouseworld import Config
     from settings import OS_ACCESS_FILE, CONFIG_DIR
 
