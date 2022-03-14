@@ -1,7 +1,6 @@
 class SCHEMA(object):
     """
-    Metaclass that specify the general methods to query the different 
-    resources in OSM and Openstack APIs.
+    Metaclass that specify the general methods interact with the APIs.
     """
     CONTENT_TYPE = {
         "Content-type":"application/json"
