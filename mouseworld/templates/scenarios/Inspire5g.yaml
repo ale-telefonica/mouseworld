@@ -34,7 +34,7 @@ Instances:
       - internet_network
 CloudInit:
   - id: ubuntu
-    cloud-config:
+    cloud-config: # En esta parte colocar la configuración del cloud init (mismo formato)
       password: ubuntu
       write_files:
         - owner: root:root
