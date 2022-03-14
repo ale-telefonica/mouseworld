@@ -24,32 +24,35 @@ Networks:
   - id: <id>
     type: <internal or external>
     description: <optional description>
+CloudInit:
+  - id: ubuntu
+    cloud-config: 
+    # En este apartado colocar la configuración del cloud init (mismo formato)
+      password: ubuntu
 Instances:
 # For each instance copy and paste this section below with the specific parameters of the instance
   - id: <unique name>
     vnf: <vnf id>
     compute: <compute id resource>
     storage: <storage id resource>
-    image:
-      name: <name>
-      path: <Needed if image is not in openstack>
-    cloud-init:
-      path: <path to cloud init> # If this path is not set them cloud init options must be provided.
+    image: <name>
+    cloud-init: <cloud_init id>
     networks:
       - management_network
       - <id> # Network name defined in the Networks section
 Mirroring:
+# Mirroring is for now limited to only one interface in the same network
 # For multiple services copy and paste the blocl below
-  service:
-    - id: <service_id>
-      # instance_index: Defined following the format vnf_index.instance_index
-      instance_id: <vm_id>
-      network_id: <network_id>
-  flow:
+  services:
+    - id: <service id>
+      instance_id: <instance id>
+      network_id: <network id>
+  flows:
   # For multiple flows copy and paste the blocl below
-    - id: <vm_id>
-      network_id: <network_id>
-      destination: <service_id>
+    - id: <flow id>
+      network_id: <network id>
+      instance_id: <instance id>
+      service: <service id>
       direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
   description: <optional description>
 
