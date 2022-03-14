@@ -2,8 +2,9 @@ import os
 import glob
 import shutil
 import tarfile
+import yaml
 from os.path import getmtime, join
-from yaml import load, Loader, dump, Dumper
+from yaml import load, Loader
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 
 from settings import SCENARIOS_DIR, TEMPLATES_DIR
@@ -99,13 +100,13 @@ class PackageTool(object):
                     # Create cloud_init file
                     cloud_init_file = f'{vdu["id"]}_cloud_init.txt'
                     vdu['cloud_init_file'] = cloud_init_file
-                    
+                    # print(self.cloud_init.render({"hostname": vdu['id']}))
                     cloud_init_info = self.build_cloudinit(vdu)
                     with open(join(scenario_vnf_path, 'cloud_init', cloud_init_file), 'w') as cloud_init:
-                        # cloud_init.write(self.cloud_init.render({"hostname": vdu['id']}))
-                        
-                        # print(cloud_init_info)
-                        dump(cloud_init_info, cloud_init)
+                        content = self.cloud_init.render({"hostname": vdu['id']})
+                        extra = yaml.safe_dump(cloud_init_info)
+                        content = content + "\n" + extra
+                        cloud_init.write(content)
                         
                     vnf['vdus'].append(vdu)
                     
@@ -157,10 +158,10 @@ class PackageTool(object):
         self.create_project_pkgs()
 
     def build_cloudinit(self, vdu):
-        ci = self.cloud_init.render({"hostname": vdu['id']})
-        cloud_init_info = load(ci, Loader)
-        cloud_init_extra = vdu['cloud-init']['cloud-config']
-        cloud_init_info.update(cloud_init_extra)
+        # ci = self.cloud_init.render({"hostname": vdu['id']})
+        # cloud_init_info = load(ci, Loader)
+        cloud_init_info = vdu['cloud-init']['cloud-config']
+        # cloud_init_info.update(cloud_init_extra)
         return cloud_init_info
 
     def clean_scenario_folder(self):
