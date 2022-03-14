@@ -16,7 +16,7 @@ Instances:
     compute: compute-core5g
     storage: storage-core5g
     image: Ubuntu2004
-    credentials: ubuntu
+    cloud-init: ubuntu
     networks:
       - management_network
       - I5G_control
@@ -26,17 +26,26 @@ Instances:
     compute: compute-i2nsf-pot-agent
     storage: storage-i2nsf-pot-agent
     image: I2NSF-PoT-Agent
-    credentials: debian 
+    cloud-init: debian 
     networks:
       - management_network
       - I5G_control
       - I5G_ipsec_internal
       - internet_network
-Credentials:
+CloudInit:
   - id: ubuntu
-    password: ubuntu
+    cloud-config:
+      password: ubuntu
+      write_files:
+        - owner: root:root
+          permissions: '0644'
+          path: /root/helloworld.txt
+          content: |
+            #Contenido del archivo
+            Esto es un archivo escrito por OSM
   - id: debian
-    password: debian
+    cloud-config:
+      password: debian
 Compute:
   # In case of multiple compute configuration copy and paste this section below
   - id: compute-core5g 

@@ -3,7 +3,7 @@ import glob
 import shutil
 import tarfile
 from os.path import getmtime, join
-from yaml import load, Loader
+from yaml import load, Loader, dump, Dumper
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 
 from settings import SCENARIOS_DIR, TEMPLATES_DIR
@@ -43,7 +43,7 @@ class PackageTool(object):
         name = self.scenario
         self.mirroring = False
         self.vnfs = self.scenario_descriptor['VNFs']
-        credentials = self.scenario_descriptor['Credentials']
+        cloudinit = self.scenario_descriptor['CloudInit']
         self.external_networks = [ n['id'] for n in self.scenario_descriptor['Networks'] if n['type'] == "external"]
         internal_networks = [ n['id'] for n in self.scenario_descriptor['Networks'] if n['type'] == "internal"]
         computes = self.scenario_descriptor['Compute']
@@ -72,7 +72,7 @@ class PackageTool(object):
             self.scenario_vnf_paths.append(scenario_vnf_path)
             for vdu in vdus:
                 if vdu['vnf'] == vnf['id']:
-                    vdu['credentials'] = list(filter(lambda x: x["id"] == vdu["credentials"], credentials))[0]
+                    vdu['cloud-init'] = list(filter(lambda x: x["id"] == vdu["cloud-init"], cloudinit))[0]
                     vdu['compute'] = list(filter(lambda x: x["id"] == vdu["compute"], computes))[0]
                     vdu['storage'] = list(filter(lambda x: x["id"] == vdu["storage"], storages))[0]
 
@@ -99,9 +99,14 @@ class PackageTool(object):
                     # Create cloud_init file
                     cloud_init_file = f'{vdu["id"]}_cloud_init.txt'
                     vdu['cloud_init_file'] = cloud_init_file
-                    with open(join(scenario_vnf_path, 'cloud_init', cloud_init_file), 'w') as cloud_init:
-                        cloud_init.write(self.cloud_init.render({'hostname': vdu['id'], 'password': vdu["credentials"]['password']}))
                     
+                    cloud_init_info = self.build_cloudinit(vdu)
+                    with open(join(scenario_vnf_path, 'cloud_init', cloud_init_file), 'w') as cloud_init:
+                        # cloud_init.write(self.cloud_init.render({"hostname": vdu['id']}))
+                        
+                        # print(cloud_init_info)
+                        dump(cloud_init_info, cloud_init)
+                        
                     vnf['vdus'].append(vdu)
                     
             vnf["external_networks"] = set(vnf_external_net)
@@ -151,6 +156,13 @@ class PackageTool(object):
 
         self.create_project_pkgs()
 
+    def build_cloudinit(self, vdu):
+        ci = self.cloud_init.render({"hostname": vdu['id']})
+        cloud_init_info = load(ci, Loader)
+        cloud_init_extra = vdu['cloud-init']['cloud-config']
+        cloud_init_info.update(cloud_init_extra)
+        return cloud_init_info
+
     def clean_scenario_folder(self):
         if os.path.exists(join(SCENARIOS_DIR, self.scenario)):
             shutil.rmtree(join(SCENARIOS_DIR, self.scenario))
@@ -181,6 +193,7 @@ class PackageTool(object):
             self.vnfpkgs.append(self.make_tarfile(vnf+'.tar.gz', vnf))
         self.nspkg = self.make_tarfile(self.scenario_ns_path+'.tar.gz', self.scenario_ns_path)
 
+    
 
 if __name__=='__main__':
 #     sw_image, vnfpkg, nspkg = create_project_pkgs('hackfest_cloudinit')
