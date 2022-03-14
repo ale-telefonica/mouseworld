@@ -1,9 +1,17 @@
 # Dont upload scenario packages
 /*/scenarios/*
+!/*/scenarios/*.txt
+
 /*/packages/*
+!/*/packages/*.txt
+
 /*/temp
-images
-/*/logs/*
+
+/*/images/*
+!/*/images/*.txt
+
+/*/logs/*.log
+!/*/logs/*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
