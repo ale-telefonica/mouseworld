@@ -51,7 +51,7 @@ class PackageTool(object):
         storages = self.scenario_descriptor['Storage']
         vdus = self.scenario_descriptor['Instances']
         vdus2 = []
-        vnfs2 = []
+        self.vnfs2 = []
         self.images = set()
         self.nsd_path = join(self.scenario_ns_path, f'{self.scenario}_nsd.yaml' )
 
@@ -100,12 +100,13 @@ class PackageTool(object):
                     # Create cloud_init file
                     cloud_init_file = f'{vdu["id"]}_cloud_init.txt'
                     vdu['cloud_init_file'] = cloud_init_file
-                    # print(self.cloud_init.render({"hostname": vdu['id']}))
-                    cloud_init_info = self.build_cloudinit(vdu)
+                    
+                    cloud_init_info = vdu['cloud-init']['cloud-config']
+                    content = self.cloud_init.render({"hostname": vdu['id']})
+                    extra = yaml.safe_dump(cloud_init_info)
+                    content = content + "\n" + extra
+
                     with open(join(scenario_vnf_path, 'cloud_init', cloud_init_file), 'w') as cloud_init:
-                        content = self.cloud_init.render({"hostname": vdu['id']})
-                        extra = yaml.safe_dump(cloud_init_info)
-                        content = content + "\n" + extra
                         cloud_init.write(content)
                         
                     vnf['vdus'].append(vdu)
@@ -131,11 +132,11 @@ class PackageTool(object):
             self.vnfd_paths.add(path_to_vnf)
 
             vnf["cps"] = vnfd["vnfd"]["ext-cpd"]
-            vnfs2.append(vnf)
-        # Render nsd template
+            self.vnfs2.append(vnf)
+        
         nsd_params = {
             "name": name,
-            "vnfs": vnfs2,
+            "vnfs": self.vnfs2,
             "external_networks": self.external_networks,
             "description": self.scenario_descriptor['Project']['description']
         }
@@ -156,13 +157,6 @@ class PackageTool(object):
                     )
 
         self.create_project_pkgs()
-
-    def build_cloudinit(self, vdu):
-        # ci = self.cloud_init.render({"hostname": vdu['id']})
-        # cloud_init_info = load(ci, Loader)
-        cloud_init_info = vdu['cloud-init']['cloud-config']
-        # cloud_init_info.update(cloud_init_extra)
-        return cloud_init_info
 
     def clean_scenario_folder(self):
         if os.path.exists(join(SCENARIOS_DIR, self.scenario)):
@@ -199,8 +193,10 @@ class PackageTool(object):
 if __name__=='__main__':
 #     sw_image, vnfpkg, nspkg = create_project_pkgs('hackfest_cloudinit')
     pkg = PackageTool("Inspire5G")
+    
     try:
         pkg.build_scenario()
+        print(pkg.vnfs2)
     except Exception as exception:
         pkg.clean_scenario_folder()
         raise(exception)

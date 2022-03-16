@@ -1,8 +1,7 @@
 # Author: Alejandro Martin Herve
 # Version: 1.0.0
 
-# TODO: Remove decorator on every method and authenticate at the begining of
-# object creation to reduce overhead.
+# TODO: Crear funcion de build y funcion de deploy de manera que se puedan editar los descripores antes de la instanciacion
 
 """
 Documentación
@@ -135,19 +134,33 @@ class OSMClient(object):
         }
         return self.vims().create(json.dumps(vim_data))
     
-    def create_ns_instance(self, scenario, nsdid, vimid, external_nets, wait=True):
-        # vlds = []
-        # for net in external_nets:
-        #     net_mapping =  {"name": net, "vim-network-name": net} 
-        #     vlds.append(net_mapping)
+    def create_ns_instance(self, scenario, nsdid, vimid, vnfs, wait=True):
+        index = 1
+        advance_data = {"vnf": []}
+        internal_vld = []
+        for vnf in vnfs:
+            int_net = vnf["internal_networks"]
+            for net in int_net:
+                internal_vld.append({"name": net,"vim-network-name": net})
 
+            advance_data["vnf"].append(
+                        {
+                            "member-vnf-index": str(index),
+                            "internal-vld": internal_vld
+                        }
+                )
+            index += 1
+        
+        
         data_instantiation = {
             "nsName": scenario,
             "nsdId": nsdid,
             "vimAccountId": vimid,
-            # "vld": vlds
         }
-
+        
+        data_instantiation.update(advance_data)
+        # print(data_instantiation)
+        
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
         status = "STARTING"
         ns_info = {}

@@ -79,6 +79,7 @@ vnfd:
     int-cpd:
       vdu-id: {{ vdu.id }}
       cpd: {{vdu.id}}_{{network}}_cp
+    various:port-security-enabled: false
   {%endfor%}
   {%endif%}
   {%endfor%}

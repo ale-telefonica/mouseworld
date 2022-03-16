@@ -116,14 +116,14 @@ def deploy(
 
     # Instantiate NS
     if not osm_client.get_id(scenario, "nslcm"):
-        nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, pkg.external_networks, wait=True)
+        nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, pkg.vnfs2, wait=True)
     else:
         print("A NS instance already exist, please rename new NS or delete old one")
         exit()
         
     if pkg.mirroring:
         print("Creating Mirroring...")
-        list(map(os_client.create_mirror, pkg.mirror) )
+        list(map(os_client.create_mirror, pkg.mirror))
 
     # Close clients conections
     osm_client.close()
