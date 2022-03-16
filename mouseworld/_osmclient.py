@@ -133,8 +133,12 @@ class OSMClient(object):
             }
         }
         return self.vims().create(json.dumps(vim_data))
-    
-    def create_ns_instance(self, scenario, nsdid, vimid, vnfs, wait=True):
+
+    def map_internal_networks(self, vnfs):
+        """
+        Función temporal para mapear internal networks hasta encontrar una solucion
+        general de instanciacion avanzada.
+        """
         index = 1
         advance_data = {"vnf": []}
         internal_vld = []
@@ -150,16 +154,17 @@ class OSMClient(object):
                         }
                 )
             index += 1
-        
-        
+        return advance_data
+
+    def create_ns_instance(self, scenario, nsdid, vimid, vnfs, wait=True):
+
         data_instantiation = {
             "nsName": scenario,
             "nsdId": nsdid,
             "vimAccountId": vimid,
         }
-        
-        data_instantiation.update(advance_data)
-        # print(data_instantiation)
+        advance_instantiation = self.map_internal_networks(vnfs)
+        data_instantiation.update(advance_instantiation)
         
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
         status = "STARTING"
