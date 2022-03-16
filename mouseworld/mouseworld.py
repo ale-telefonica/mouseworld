@@ -15,8 +15,7 @@
 # 9. Comprobar funcionamiento.
 
 # TODO: Add support for passing ssh public keys [Not a priority]
-# TODO: Add function that create scenario folder structure and config template for that scenario base on general template
-# TODO: Validar ns instantiation STATE. When State is diferent of BUILDING AND READY
+# TODO: Crear funcion de build y funcion de deploy de manera que se puedan editar los descripores antes de la instanciacion
 
 from yaml import load, Loader
 import os
@@ -50,7 +49,6 @@ class Config(object):
 
     def __getattr__(self, __name: str):
         return self.config[__name]
-
 
 def image_is_available( image ):
     image_path = glob.glob(os.path.join(settings.IMAGES_DIR, image+"*"))

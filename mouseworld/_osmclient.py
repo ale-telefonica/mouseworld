@@ -1,7 +1,6 @@
 # Author: Alejandro Martin Herve
 # Version: 1.0.0
 
-# TODO: Crear funcion de build y funcion de deploy de manera que se puedan editar los descripores antes de la instanciacion
 
 """
 Documentación
@@ -165,7 +164,8 @@ class OSMClient(object):
         }
         advance_instantiation = self.map_internal_networks(vnfs)
         data_instantiation.update(advance_instantiation)
-        
+        print(data_instantiation)
+        # exit()
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
         status = "STARTING"
         ns_info = {}

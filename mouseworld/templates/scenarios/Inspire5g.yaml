@@ -36,16 +36,18 @@ CloudInit:
   - id: ubuntu
     cloud-config: # En esta parte colocar la configuración del cloud init (mismo formato)
       password: ubuntu
-      write_files:
-        - owner: root:root
-          permissions: '0644'
-          path: /root/helloworld.txt
-          content: |
-            #Contenido del archivo
-            Esto es un archivo escrito por OSM
   - id: debian
     cloud-config:
       password: debian
+      ssh_pwauth: True
+      chpasswd:
+        expire: false
+      write_files:
+        - path: /etc/environment
+          owner: root:root
+          content: |
+            OPOT_CONTROLLER_IP=10.204.4.219
+          append: false
 Compute:
   # In case of multiple compute configuration copy and paste this section below
   - id: compute-core5g 
