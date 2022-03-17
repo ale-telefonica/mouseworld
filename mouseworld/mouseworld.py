@@ -55,11 +55,11 @@ class Config(object):
 
 @click.group()
 @click.pass_context
-@click.option("--scenario", required=True, type=str)
+@click.option("--scenario", required=True, type=str, help="Name of the scenario template to build (Template must exist in templates/scenarios folder)")
 def cli_mw(ctx, scenario):
     ctx.obj["scenario"] = scenario
 
-@cli_mw.command()
+@cli_mw.command(short_help="Build scenario template")
 @click.pass_context
 def build(ctx):
     # Create scenario packages
@@ -81,8 +81,8 @@ def load_scenario(scenario):
             pkg = pickle.load(package_fd)
     return pkg
 
-@cli_mw.command()
-@click.option("--create-vim/--no-create-vim", default=True)
+@cli_mw.command(short_help="Deploy already build scenario")
+@click.option("--create-vim/--no-create-vim", default=True, help="Create VIM conecction if it does not exist")
 @click.pass_context
 def deploy(
     ctx,
