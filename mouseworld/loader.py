@@ -155,8 +155,14 @@ class PackageTool(object):
                     'dest':f"{flow['service']['instance_id']}_{flow['service']['network_id']}",
                     "direction": flow['direction']}
                     )
+        self.clean_to_serialize()
+        
 
-        self.create_project_pkgs()
+    def clean_to_serialize(self):
+        self.nsd = ""
+        self.vnfd = ""
+        self.cloud_init = ""
+        self.env = ""
 
     def clean_scenario_folder(self):
         if os.path.exists(join(SCENARIOS_DIR, self.scenario)):
@@ -195,8 +201,12 @@ if __name__=='__main__':
     pkg = PackageTool("Inspire5G")
     
     try:
+        import pickle
+        import settings
         pkg.build_scenario()
-        print(pkg.vnfs2)
+        # print(pkg.vnfs2)
+        with open(os.path.join(settings.TEMP_DIR, "Inspire5G"), "wb") as package_fd:
+            pickle.dump(pkg, package_fd)
     except Exception as exception:
         pkg.clean_scenario_folder()
         raise(exception)

@@ -15,11 +15,12 @@
 # 9. Comprobar funcionamiento.
 
 # TODO: Add support for passing ssh public keys [Not a priority]
-# TODO: Crear funcion de build y funcion de deploy de manera que se puedan editar los descripores antes de la instanciacion
 
 from yaml import load, Loader
 import os
 import glob
+import click
+import pickle
 
 from loader import PackageTool
 from _osmclient import OSMClient
@@ -27,6 +28,8 @@ from os_client import OpenstackClient
 
 import settings
 
+class PackageToolClone(PackageTool):
+    pass
 
 class Config(object):
     def __init__(self, config_file, _type=None):
@@ -50,26 +53,49 @@ class Config(object):
     def __getattr__(self, __name: str):
         return self.config[__name]
 
-def image_is_available( image ):
-    image_path = glob.glob(os.path.join(settings.IMAGES_DIR, image+"*"))
-    return image_path
+@click.group()
+@click.pass_context
+@click.option("--scenario", required=True, type=str)
+def cli_mw(ctx, scenario):
+    ctx.obj["scenario"] = scenario
 
-
-def deploy(
-    scenario: str,
-    osm_config_file=settings.OSM_ACCESS_FILE,
-    os_config_file=settings.OS_ACCESS_FILE,
-    config_dir=settings.CONFIG_DIR,
-    create_vim=True
-):
+@cli_mw.command()
+@click.pass_context
+def build(ctx):
     # Create scenario packages
+    scenario = ctx.obj["scenario"]
     pkg = PackageTool(scenario)
     try:
         pkg.build_scenario()
+        ctx.obj["pkg"] = pkg
+        with open(os.path.join(settings.TEMP_DIR, scenario), "wb") as package_fd:
+            pickle.dump(pkg, package_fd)
     except Exception as exception:
         pkg.clean_scenario_folder()
-        raise(exception)
+        raise(exception.args)
 
+def load_scenario(scenario):
+    path = os.path.join(settings.TEMP_DIR, scenario)
+    if os.path.exists(path):
+        with open(os.path.join(settings.TEMP_DIR, scenario), "rb") as package_fd:
+            pkg = pickle.load(package_fd)
+    return pkg
+
+@cli_mw.command()
+@click.option("--create-vim/--no-create-vim", default=True)
+@click.pass_context
+def deploy(
+    ctx,
+    create_vim,
+    osm_config_file=settings.OSM_ACCESS_FILE,
+    os_config_file=settings.OS_ACCESS_FILE,
+):
+    create_vim = create_vim
+    scenario = ctx.obj['scenario']
+
+    pkg = load_scenario(scenario)
+    pkg.create_project_pkgs()
+    
     # Load osm and openstack access credentials and validate config files
     osm_config = Config(osm_config_file, _type="OSM")
     os_config = Config(os_config_file, _type='Openstack')
@@ -127,11 +153,15 @@ def deploy(
     osm_client.close()
     os_client.close()
 
+def image_is_available( image ):
+    image_path = glob.glob(os.path.join(settings.IMAGES_DIR, image+"*"))
+    return image_path
+
 # def destroy(scenario):
 #     # Delete network service from OSM
 #     nslcm_id = osm_client.get_id(scenario, "nslcm")
 
 if __name__ == '__main__':
-    deploy('Inspire5g', create_vim=True)
+    cli_mw(obj={})
     # deploy('hackfest_custom', create_vim=True)
     # destroy('hackfest_custom')

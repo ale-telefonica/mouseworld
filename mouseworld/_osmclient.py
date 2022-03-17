@@ -164,8 +164,7 @@ class OSMClient(object):
         }
         advance_instantiation = self.map_internal_networks(vnfs)
         data_instantiation.update(advance_instantiation)
-        print(data_instantiation)
-        # exit()
+        
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
         status = "STARTING"
         ns_info = {}
