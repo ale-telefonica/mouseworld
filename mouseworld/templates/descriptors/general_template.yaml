@@ -3,23 +3,40 @@ Project:
   description: <optional description>
 VNFs:
 # For each vnf copy and paste this section
-  - id: <name> 
+  - id: <unique_name> 
+    name: <name>
     number-of-instances: <number of instances>
     description: <optional description>
 Instances:
 # For each instance copy and paste this section below with the specific parameters of the instance
   - id: <unique name>
+    name: <name>
     vnf: <vnf id>
     compute: <compute id resource>
     storage: <storage id resource>
     image: <name>
-    credentials: <credentials id>
+    cloud-init: <cloud_init id>
     networks:
       - management_network
       - <id> # Network name defined in the Networks section
-Credentials:
-  - id: <unique name>
-    password: <password>
+CloudInit:
+  - id: <name>
+    cloud-config: # En esta parte colocar la configuración del cloud init (mismo formato)
+      username: ubuntu
+      password: ubuntu
+  - id: debian
+    cloud-config:
+      username: debian
+      password: debian
+      ssh_pwauth: True
+      chpasswd:
+        expire: false
+      write_files:
+        - path: /etc/environment
+          owner: root:root
+          content: |
+            OPOT_CONTROLLER_IP=10.204.4.219
+          append: false
 Compute:
   # In case of multiple compute configuration copy and paste this section below
   - id: <name for this resource> 
@@ -53,6 +70,18 @@ Mirroring:
       - destination: <service_id>
     direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
   description: <optional description>
-
-# Not defined yet a configuration section that is passed with juju charms
-# Config:
+Charms:
+  - name: <charm_name>
+    level: <vnf/vdu>
+    vnf: <vnf_id>
+    target: <VNF/VDU id> # If the action is applied to the entire VNF or if the action is applied to a sigle VDU
+    credentials: <cloud_init id>
+    actions:
+      - name: <action_name>
+        parameters:
+          - name: <parameter_name>
+            value: <parameter_value>
+        # To reference a parameter in the command yo can use {param_name}, 
+        # always replacing "-" with "_". The variables ssh_username, ssh_hostname and ssh_passsword
+        # of the resource where the charm is going to be executed are also available
+        command: <command to execute> 

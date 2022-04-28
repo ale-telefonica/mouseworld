@@ -70,15 +70,18 @@ def build(ctx):
         ctx.obj["pkg"] = pkg
         with open(os.path.join(settings.TEMP_DIR, scenario), "wb") as package_fd:
             pickle.dump(pkg, package_fd)
-    except Exception as exception:
+    except FileNotFoundError:
+        raise(f"Scenario {scenario} has not been constructed")
+    except Exception as error:
         pkg.clean_scenario_folder()
-        raise(exception.args)
+        raise(error.args)
 
 def load_scenario(scenario):
     path = os.path.join(settings.TEMP_DIR, scenario)
     if os.path.exists(path):
-        with open(os.path.join(settings.TEMP_DIR, scenario), "rb") as package_fd:
+        with open(path, "rb") as package_fd:
             pkg = pickle.load(package_fd)
+        os.remove(path)
     return pkg
 
 @cli_mw.command(short_help="Deploy already build scenario")

@@ -10,6 +10,7 @@ Software to automate Network Services deployments using Open Source Mano and Ope
 2. The scenario template must be created under the **scenarios** directory, following the sintax of the example template *general_template.yaml*, located inside the **/templates/scenarios** folder.
 
 ## Usage
+
 ```
 Usage: mouseworld.py [OPTIONS] COMMAND [ARGS]...
 

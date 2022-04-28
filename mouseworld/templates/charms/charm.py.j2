@@ -33,18 +33,23 @@ class SampleProxyCharm(SSHProxyCharm):
         """Called when the charm is being started"""
         super().on_start(event)
 
-    def configure_remote(self, event):
+    {% for action in actions %}
+    {# Configure charm specific action here #}
+    def {{ action.name }}(self, event):
         """Configure remote action."""
 
         if self.model.unit.is_leader():
             stderr = None
             try:
-                mgmt_ip = self.model.config["ssh-hostname"]
-                destination_ip = event.params["destination_ip"]
-                cmd = "vnfcli set license {} server {}".format(
-                    mgmt_ip,
-                    destination_ip
-                )
+                {%if action.parameters%}
+                {%for param in action.parameters%}
+                {{param.name}} = event.params["{{param.name}}"]
+                {%endfor%}
+                {%endif%}
+                ssh_hostname = self.model.config["ssh-hostname"]
+                ssh_password = self.model.config["ssh-password"]
+                ssh_username = self.model.config["ssh-username"]
+                cmd = f"{{ action.command }}"
                 proxy = self.get_ssh_proxy()
                 stdout, stderr = proxy.run(cmd)
                 event.set_results({"output": stdout})
@@ -52,6 +57,9 @@ class SampleProxyCharm(SSHProxyCharm):
                 event.fail("Action failed {}. Stderr: {}".format(e, stderr))
         else:
             event.fail("Unit is not leader")
+            
+    {% endfor %}
+    
 
 if __name__ == "__main__":
     main(SampleProxyCharm)

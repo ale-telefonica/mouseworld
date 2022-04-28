@@ -10,6 +10,87 @@ from jinja2 import Environment, BaseLoader, TemplateNotFound
 from settings import SCENARIOS_DIR, TEMPLATES_DIR
 
 
+class Charm(object):
+
+    def __init__(self, environ, vnf_path, charm_info):
+        self.env = environ
+        self.vnf_path = vnf_path
+        self.charm_info = charm_info
+        self.actions = self.env.get_template("actions.yaml.j2")
+        self.proxycharm = self.env.get_template("charm.py.j2")
+        self.metadata = self.env.get_template("metadata.yaml.j2")
+        self.config = self.env.get_template("config.yaml.j2")
+        # self.day1_2 = self.env.get_template("day1_2.yaml.j2")
+        
+        self.extract()
+        self.setup()
+        
+
+    def parse_all(self):
+        # Parse actions.yaml file
+        with open(os.path.join(self.charm_dir, "actions.yaml"), 'w') as charm_action_file:
+            charm_action_file.write(self.actions.render(self.variables))
+        
+        # Parse charms.yaml file
+        with open(os.path.join(self.charm_dir, "src", "charm.py"), 'w') as charm_script:
+            charm_script.write(self.proxycharm.render(self.variables))
+
+        # Parse metadata.yaml file
+        with open(os.path.join(self.charm_dir, "metadata.yaml"), 'w') as metadata:
+            metadata.write(self.metadata.render(self.variables))
+
+        # Parse config.yaml file
+        with open(os.path.join(self.charm_dir, "config.yaml"), 'w') as config:
+            config.write(self.config.render())
+
+
+    def setup(self,):
+        os.makedirs(self.charm_dir, exist_ok=True)
+        os.chdir(self.charm_dir)
+        os.makedirs(os.path.join(self.charm_dir, "hooks"), exist_ok=True)
+        os.makedirs(os.path.join(self.charm_dir, "lib"), exist_ok=True)
+        os.makedirs(os.path.join(self.charm_dir, "mod"), exist_ok=True)
+        os.makedirs(os.path.join(self.charm_dir, "src"), exist_ok=True)
+        
+        with open(os.path.join(self.charm_dir, "src", "charm.py"), "w") as charm_file:
+            charm_file.write("")
+    
+    def clone_proxy_charm(self):
+
+        os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
+        
+        os.symlink("../src/charm.py", "hooks/upgrade-charm")
+        os.symlink("../src/charm.py", "hooks/install")
+        os.symlink("../src/charm.py", "hooks/start")
+        
+        os.system("git clone https://github.com/canonical/operator mod/operator")
+        os.system("git clone https://github.com/charmed-osm/charms.osm mod/charms.osm")
+       
+        os.symlink("../mod/operator/ops", "lib/ops")
+        os.symlink("../mod/charms.osm/charms", "lib/charms")
+
+    def extract(self):
+        self.charm_name = self.charm_info["name"]
+        self.charm_dir = os.path.join(self.vnf_path, "charms", self.charm_name)
+        name = self.charm_info['name']
+        vnf = self.charm_info['vnf']
+        target = self.charm_info['target']
+        level = self.charm_info['level']
+        charm_actions = self.charm_info['actions']
+        username = self.charm_info['credentials']['cloud-config']['username']
+        password = self.charm_info['credentials']['cloud-config']['password']
+
+        self.variables = {
+            "charm_name": name,
+            "vnf": vnf,
+            "target": target,
+            "actions": charm_actions,
+            "ssh_username": username,
+            "ssh_password": password,
+            "level": level
+        }
+
+
 class MouseworldLoader(BaseLoader):
 
     def __init__(self, path=TEMPLATES_DIR):
@@ -31,7 +112,7 @@ class MouseworldLoader(BaseLoader):
 class PackageTool(object):
     def __init__(self, scenario):
         self.scenario = scenario
-        self.scenario_ns_path = join(SCENARIOS_DIR, self.scenario, f'{self.scenario}_ns')
+        self.scenario_ns_path = os.path.join(SCENARIOS_DIR, self.scenario, f'{self.scenario}_ns')
         self.scenario_vnf_paths = []
         file_loader = MouseworldLoader()
         self.env = Environment(loader=file_loader, trim_blocks=True, lstrip_blocks=True)
@@ -41,6 +122,7 @@ class PackageTool(object):
         self.scenario_descriptor = load(self.env.get_template(f"{self.scenario}.yaml").render(), Loader)
 
     def build_scenario(self):
+        # Init variables
         name = self.scenario
         self.mirroring = False
         self.vnfs = self.scenario_descriptor['VNFs']
@@ -51,13 +133,18 @@ class PackageTool(object):
         storages = self.scenario_descriptor['Storage']
         vdus = self.scenario_descriptor['Instances']
         vdus2 = []
+        charms = []
         self.vnfs2 = []
         self.images = set()
         self.nsd_path = join(self.scenario_ns_path, f'{self.scenario}_nsd.yaml' )
-
+        self.vnfd_paths = set()
+        if 'Charms' in self.scenario_descriptor:
+            charms = self.scenario_descriptor['Charms']
+        
+        # Create folder structure
         self.create_folders()
         
-        self.vnfd_paths = set()
+        # Assemble VNFs/VDUs
         for vnf in self.vnfs:
             vnf_external_net = []
             vnf_internal_net = []
@@ -115,7 +202,7 @@ class PackageTool(object):
             vnf["internal_networks"] = set(vnf_internal_net)
             vnf["computes"] = vnf_computes
             vnf["storages"] = vnf_storages
-            
+
             vnf_params = {
                 "vnf": vnf,
                 "vdus": vdus2,
@@ -124,6 +211,18 @@ class PackageTool(object):
                 "images": self.images,
                 "description": vnf['description']
             }
+
+            if charms:
+                charm = list(filter(lambda x: x["vnf"] == vnf["id"], charms))
+                
+                if charm: 
+                    vnf['charm'] = charm[0]
+                    vnf['charm']['credentials'] = list(filter(lambda x: x["id"] == vnf['charm']["credentials"], cloudinit))[0]
+                    _charm = Charm(self.env, scenario_vnf_path, vnf['charm'])
+                    _charm.parse_all()
+                    _charm.clone_proxy_charm()
+                    vnf_params['charm'] = _charm.variables
+                    # print(vnf_params['charm'])
 
             with open(path_to_vnf, 'w') as vnf_descriptor:
                 vnfd = self.vnfd.render(vnf_params)
@@ -143,6 +242,7 @@ class PackageTool(object):
         with open(self.nsd_path, 'w') as ns_descriptor:
             ns_descriptor.write(self.nsd.render(nsd_params))
 
+        # Setup mirroring if requested
         if "Mirroring" in self.scenario_descriptor:
             self.mirror = []
             self.mirroring = self.scenario_descriptor['Mirroring']
@@ -155,9 +255,9 @@ class PackageTool(object):
                     'dest':f"{flow['service']['instance_id']}_{flow['service']['network_id']}",
                     "direction": flow['direction']}
                     )
+        # Clean variable to save progress in serialized file
         self.clean_to_serialize()
         
-
     def clean_to_serialize(self):
         self.nsd = ""
         self.vnfd = ""
@@ -168,7 +268,7 @@ class PackageTool(object):
         if os.path.exists(join(SCENARIOS_DIR, self.scenario)):
             shutil.rmtree(join(SCENARIOS_DIR, self.scenario))
         else:
-            raise(Exception("Scenario folder odes not exit, no deleting"))
+            raise(Exception("Scenario folder does not exit, no deleting"))
 
     def create_folders(self):
         print("Creating project directory tree")
@@ -194,7 +294,35 @@ class PackageTool(object):
             self.vnfpkgs.append(self.make_tarfile(vnf+'.tar.gz', vnf))
         self.nspkg = self.make_tarfile(self.scenario_ns_path+'.tar.gz', self.scenario_ns_path)
 
+
+class IterJ:
+    """
+    Data structure to traverse json objects
+
+    Access dict using the nomenclature iterj.key.key..., where iterj is the child 
+    object of class IterJ, adn key, the dictionary key you want to acess.
+
+    Access elements of list by using the nomenclature iterj.i<index>, where index
+    is a number representing then index of the values you want access.
+
+    To access the final result the value attribute must be called
+    Example: iterj.key.i1.key.value
     
+    :param: obj: Json object to traverse
+    """
+    def __init__(self, obj):
+        self.obj = obj
+        self.value = self.obj
+
+    def __getattr__(self, key):
+        if isinstance(self.obj, list):
+            value = self.obj[int(key[1])]
+        elif isinstance(self.obj, str) and key != "value":
+            raise(TypeError(f"You are trying to access a string <{self.obj}> using key={key}"))
+        else:
+            value = self.obj[key]
+        return IterJ(value)
+
 
 if __name__=='__main__':
 #     sw_image, vnfpkg, nspkg = create_project_pkgs('hackfest_cloudinit')

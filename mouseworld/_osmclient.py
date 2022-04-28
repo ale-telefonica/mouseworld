@@ -107,11 +107,11 @@ class OSMClient(object):
             raise(e)
 
     def create_nsd_pkg(self, nspkg):
-        print("Creating NS package...")
+        print(f"Creating NS package {os.path.basename(nspkg).split('.')[0]}...")
         return self.create_pkg(nspkg, 'nsd')
 
     def create_vnfd_pkg(self, vnfpkg):
-        print("Creating VNF package...")
+        print(f"Creating VNF package {os.path.basename(vnfpkg).split('.')[0]} ...")
         return self.create_pkg(vnfpkg, 'vnfd')  
 
     def create_vim(self, os_config):

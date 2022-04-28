@@ -1,0 +1,14 @@
+name: {{ charm_name }}
+summary: ""
+maintainer: Mouseworld
+description: |
+  "Charm create by Mouseworld"
+tags:
+  - nfv
+subordinate: false
+series:
+  - focal
+  - bionic
+peers: # This will give HA capabilities to your Proxy Charm
+  proxypeer:
+    interface: proxypeer

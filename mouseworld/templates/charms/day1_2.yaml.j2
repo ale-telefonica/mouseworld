@@ -1,0 +1,44 @@
+    lcm-operations-configuration:
+      operate-vnf-op-config:
+        day1-2:
+        - id: {{ charm.target }}
+          execution-environment-list:
+          - id: "{{charm.target}}_env"
+            {% if charm.level == "vdu"%}
+            external-connection-point-ref: management_network_cp_{{ charm.target }} 
+            {% else %} 
+            external-connection-point-ref: {{ interface.mgmt }} 
+            {%endif%}
+            juju:
+              charm: {{ charm.charm_name }}
+              proxy: True
+          initial-config-primitive:
+          {# Define the actions in the charm #}
+          - execution-environment-ref: {{charm.target}}_env
+          {# Action "config" is mandatory #}
+            seq: '1'
+            name: config 
+            parameter:
+            {# This credentials must be set in order to execute further actions #}
+            - name: ssh-hostname
+            {# This value may stay as it is because is automatically replaced 
+            by the VNF or VDU management cp #}
+              value: <rw_mgmt_ip>
+            - name: ssh-username
+              value:  {{charm.ssh_username}}
+            - name: ssh-password
+              value: {{charm.ssh_password}}
+            {# Charm specific action can be defined here with the necesary parameters #}
+            {# seq: His vale is el order in which the actions will be executed #}
+            {# For multiple action copy and paste the section bellow changing the seq value #}
+            {% for action in charm.actions %}
+          - name: {{action.name}}
+            {%if action.parameters%}
+            parameter:
+              {% for parameter in action.parameters %}
+              - name: {{parameter.name}}
+                value: {{parameter.value}}
+              {%endfor%}
+            {%endif%}
+            seq: {{ loop.index + 1 }}
+            {%endfor%}

@@ -4,6 +4,27 @@ vnfd:
   description: {{vnf.description}}
   provider: OSM
   version: '1.0'
+  ext-cpd:
+  {% set interface = namespace(mgmt="") %}
+  {% for vdu in vdus %}
+  {% if vdu.vnf == vnf.id %}
+  {% for network in vdu.external_networks %}
+  {% if network == "management_network" and loop.index == 1%}
+  {% set interface.mgmt = network + "_cp_"+ vdu.id %}
+  {%endif%}
+  - id: {{network + "_cp_"+vdu.id}}
+    int-cpd:
+      vdu-id: {{ vdu.id }}
+      cpd: {{vdu.id}}_{{network}}_cp
+    various:port-security-enabled: false
+  {%endfor%}
+  {%endif%}
+  {%endfor%}
+  int-virtual-link-desc:
+  {% for network in vnf.internal_networks %}
+  - id: {{network}}
+  {%endfor%}
+  mgmt-cp: {{ interface.mgmt }}
   df:
   - id: default-df
     instantiation-level:
@@ -23,6 +44,9 @@ vnfd:
       max-number-of-instances: 1
     {%endif%}
     {%endfor%}
+    {%if charm %}
+    {% include 'day1_2.yaml.j2'|indent %}
+    {%endif%}
   virtual-storage-desc:
   {% for storage in vnf.storages %}
   - id: {{storage.id}}
@@ -67,24 +91,5 @@ vnfd:
     {%endfor%}
     {%endif%}
   {%endfor%}
-  ext-cpd:
-  {% set interface = namespace(mgmt="") %}
-  {% for vdu in vdus %}
-  {% if vdu.vnf == vnf.id %}
-  {% for network in vdu.external_networks %}
-  {% if network == "management_network" %}
-  {% set interface.mgmt = network + "_cp_"+ vdu.id %}
-  {%endif%}
-  - id: {{network + "_cp_"+vdu.id}}
-    int-cpd:
-      vdu-id: {{ vdu.id }}
-      cpd: {{vdu.id}}_{{network}}_cp
-    various:port-security-enabled: false
-  {%endfor%}
-  {%endif%}
-  {%endfor%}
-  int-virtual-link-desc:
-  {% for network in vnf.internal_networks %}
-  - id: {{network}}
-  {%endfor%}
-  mgmt-cp: {{ interface.mgmt }}
+  
+  
