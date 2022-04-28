@@ -2,9 +2,12 @@
 Software to automate Network Services deployments using Open Source Mano and Openstack in MouseWorld Lab
 
 ## Configuration
-Before running the program the config files must be filled:
-- **openstack_access.yaml**: Openstack access information
-- **osm_access.yaml**: OSM access information
+### Before running the program the configuration files must be filled
+1. Access files:
+- **openstack_access.yaml**: Openstack access information. Located inside the **config** directory
+- **osm_access.yaml**: OSM access information. Located inside the **config** directory
+
+2. The scenario template must be created under the **scenarios** directory, following the sintax of the example template *general_template.yaml*, located inside the **/templates/scenarios** folder.
 
 ## Usage
 ```
