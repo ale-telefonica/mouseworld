@@ -141,7 +141,8 @@ class OSMClient(object):
         index = 1
         advance_data = {"vnf": []}
         internal_vld = []
-        for vnf in vnfs:
+        
+        for vnf in vnfs:       
             int_net = vnf["internal_networks"]
             for net in int_net:
                 internal_vld.append({"name": net,"vim-network-name": net})
@@ -152,6 +153,8 @@ class OSMClient(object):
                             "internal-vld": internal_vld
                         }
                 )
+                
+            internal_vld = []
             index += 1
         return advance_data
 

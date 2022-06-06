@@ -45,6 +45,7 @@ class HTTP(object):
         """
         self._http_header.update(content_type)
         response = requests.post('/'.join([self._url, endpoint]), headers=self._http_header, data=data, verify=False)
+        
         if response.ok:  
             return response
         else:

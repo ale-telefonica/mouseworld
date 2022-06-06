@@ -1,0 +1,91 @@
+Project: 
+  Name: Spider
+  description: Spider Dinamic Escenario to execute the excercises. 
+VNFs:
+# For each vnf copy and paste this section
+  - id: vnf-vm1-sta
+    number-of-instances: 1
+    description: Machine that runs all the necessary tools for the exercise. 
+  - id: vnf-vm2-attacker
+    number-of-instances: 1
+    description: Machine used to send the packets from the pcaps to VM1
+Instances:
+# For each instance copy and paste this section below with the specific parameters of the instance
+  - id: instance-vm1-sta
+    vnf: vnf-vm1-sta
+    compute: compute-vm1-sta
+    storage: storage-vm1-sta
+    image: image-vm1_sta_v11
+    cloud-init: vm1-sta
+    networks:
+      - management_network
+      - mirroring_a
+  - id: instance-vm2-attacker
+    vnf: vnf-vm2-attacker
+    compute: compute-vm2-attacker
+    storage: storage-vm2-attacker
+    image: image-vm2_attacker_v3
+    cloud-init: vm2-attacker
+    networks:
+      - management_network
+      - mirroring_b
+CloudInit:
+  - id: vm1-sta
+    cloud-config: # En esta parte colocar la configuración del cloud init (mismo formato)
+      hostname: vm1-sta
+      fqdn: vm1-sta 
+      username: ubuntu
+      password: ubuntu
+      ssh_pwauth: True
+      chpasswd:
+        expire: false
+  - id: vm2-attacker
+    hostname: vm2-attacker
+    fqdn: vm2-attacker 
+    cloud-config:
+      username: ubuntu
+      password: ubuntu
+      ssh_pwauth: True
+      chpasswd:
+        expire: false
+Compute:
+  # In case of multiple compute configuration copy and paste this section below
+  - id: compute-vm1-sta
+    ram: "4"
+    vcpus: "2"
+  - id: compute-vm2-attacker
+    ram: "1"
+    vcpus: "1"
+Storage:
+  # In case of multiple storage configuration copy and paste this section below
+  - id: storage-vm1-sta
+    amount: "50"
+  - id: storage-vm2-attacker
+    amount: "10"
+Networks:
+# An internal network are the ones created by projects and are no accesible from outside
+# An external network are the onse already created in openstack accesible from outside
+# By default all instances are conected to management network
+  - id: management_network
+    type: external
+  - id: mirroring_a
+    type: internal
+    description: Network used to receive mirror from tap-flow
+  - id: mirroring_b
+    type: internal
+    description: Network used to forward to tap-service
+Mirroring:
+# Mirroring is for now limited to only one interface in the same network
+# For multiple services copy and paste the blocl below
+  services:
+    - id: service-vm1-sta
+      instance_id: instance-vm1-sta
+      network_id: mirroring_a
+  flows:
+  # For multiple flows copy and paste the blocl below
+    - id: flow-vm2-attacker
+      network_id: mirroring_b
+      instance_id: instance-vm2-attacker
+      service: service-vm1-sta
+      direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
+  description: Flow to be copy from VM2 to VM1
