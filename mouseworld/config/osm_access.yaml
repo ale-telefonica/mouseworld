@@ -1,4 +1,4 @@
 # This credentials must be valid or the authentication process will fail
 OSM_USER: 'admin'
-OSM_URL: 'nbi.192.168.159.217.nip.io'
+OSM_URL: '192.168.159.10:9999'
 OSM_PASSWORD: 'admin'
