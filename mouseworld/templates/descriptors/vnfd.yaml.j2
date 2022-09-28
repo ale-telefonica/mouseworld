@@ -10,12 +10,12 @@ vnfd:
   {% if vdu.vnf == vnf.id %}
   {% for network in vdu.external_networks %}
   {% if network == "management_network" and loop.index == 1%}
-  {% set interface.mgmt = network + "_cp_"+ vdu.id %}
+  {% set interface.mgmt = network + "_cp_ext" %}
   {%endif%}
-  - id: {{network + "_cp_"+vdu.id}}
+  - id: {{network + "_cp_ext"}}
     int-cpd:
       vdu-id: {{ vdu.id }}
-      cpd: {{vdu.id}}_{{network}}_cp
+      cpd: {{network}}_cp_int
     various:port-security-enabled: false
   {%endfor%}
   {%endif%}
@@ -79,7 +79,7 @@ vnfd:
     virtual-compute-desc: {{vdu.compute.id}}
     int-cpd:
     {% for network in vdu.networks %}
-    - id: {{vdu.id}}_{{network}}_cp
+    - id: {{network}}_cp_int
       {% if network in internal_networks %}
       int-virtual-link-desc: {{network}}
       {%endif%}

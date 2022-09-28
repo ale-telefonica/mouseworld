@@ -1,0 +1,49 @@
+lcm-operations-configuration:
+  operate-vnf-op-config:
+    day1-2:
+    - config-primitive:
+      {% for action in charm.actions %}
+      - name: {{action.name}}
+        execution-environment-ref: {{charm.target}}_env
+        {%if action.parameters%}
+        parameter:
+        {% for parameter in action.parameters %}
+        - data-type: STRING
+          default-value: {{parameter.value}}
+          name: {{parameter.name}}
+        {%endfor%}
+        {%endif%}
+      {%endfor%}
+      config-access:
+        ssh-access:
+          default-user: {{charm.ssh_username}}
+          required: true
+      execution-environment-list:
+      - id: {{charm.target}}_env
+        juju:
+          charm: {{ charm.charm_name }}
+          cloud: k8s
+      id: {{ charm.target }}_vnf
+      initial-config-primitive:
+      - name: config
+        execution-environment-ref: {{charm.target}}_env
+        parameter:
+        - name: ssh-hostname
+          value: <rw_mgmt_ip>
+        - name: ssh-username
+          value: {{charm.ssh_username}}
+        - name: ssh-password
+          value: {{charm.ssh_password}}
+        seq: 1
+      {% for action in charm.actions %}
+      - name: {{action.name}}
+        execution-environment-ref: {{charm.target}}_env
+        {%if action.parameters%}
+        parameter:
+          {% for parameter in action.parameters %}
+          - name: {{parameter.name}}
+            value: {{parameter.value}}
+          {%endfor%}
+        {%endif%}
+        seq: {{ loop.index + 1 }}
+      {%endfor%}

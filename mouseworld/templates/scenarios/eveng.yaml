@@ -1,0 +1,52 @@
+Project:
+  Name: eveng
+  description: version1
+VNFs:
+- id: VPC
+  number-of-instances: 1
+  description: vpcs
+- id: xrv9k
+  number-of-instances: 1
+  description: xrv9k
+Instances:
+- id: VPC
+  vnf: VPC
+  compute: computeVPC
+  storage: storageVPC
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - vpc_xrv9k
+- id: xrv9k
+  vnf: xrv9k
+  compute: computexrv9k
+  storage: storagexrv9k
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - vpc_xrv9k
+CloudInit:
+- id: ubuntu
+  cloud-config:
+    username: ubuntu
+    password: ubuntu
+Compute:
+- id: computeVPC
+  ram: '4'
+  vcpus: '2'
+- id: computexrv9k
+  ram: '4'
+  vcpus: '2'
+Storage:
+- id: storageVPC
+  amount: '16'
+- id: storagexrv9k
+  amount: '20'
+Networks:
+- id: management_network
+  type: external
+- id: vpc_xrv9k
+  type: internal
+  description: Network to connect the vpc with the xrv9k

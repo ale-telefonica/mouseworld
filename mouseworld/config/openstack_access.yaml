@@ -1,7 +1,7 @@
 # This credentials must be valid or the authentication process will fail
 OS_USERNAME: admin
 OS_PASSWORD: superadmin
-OS_PROJECT_NAME: Testbed
+OS_PROJECT_NAME: Mouse
 OS_USER_DOMAIN_NAME: Default
 OS_PROJECT_DOMAIN_ID: default
 OS_PROJECT_DOMAIN_NAME: Default

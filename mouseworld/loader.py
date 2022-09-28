@@ -34,6 +34,7 @@ class Charm(object):
         # Parse charms.yaml file
         with open(os.path.join(self.charm_dir, "src", "charm.py"), 'w') as charm_script:
             charm_script.write(self.proxycharm.render(self.variables))
+            os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
 
         # Parse metadata.yaml file
         with open(os.path.join(self.charm_dir, "metadata.yaml"), 'w') as metadata:
@@ -45,29 +46,30 @@ class Charm(object):
 
 
     def setup(self,):
-        os.makedirs(self.charm_dir, exist_ok=True)
-        os.chdir(self.charm_dir)
-        os.makedirs(os.path.join(self.charm_dir, "hooks"), exist_ok=True)
-        os.makedirs(os.path.join(self.charm_dir, "lib"), exist_ok=True)
-        os.makedirs(os.path.join(self.charm_dir, "mod"), exist_ok=True)
-        os.makedirs(os.path.join(self.charm_dir, "src"), exist_ok=True)
+        shutil.copytree(os.path.join(TEMPLATES_DIR, "charms", "files"), self.charm_dir, symlinks=True)
         
-        with open(os.path.join(self.charm_dir, "src", "charm.py"), "w") as charm_file:
-            charm_file.write("")
+        # os.chdir(self.charm_dir)
+        # os.makedirs(os.path.join(self.charm_dir, "hooks"), exist_ok=True)
+        # os.makedirs(os.path.join(self.charm_dir, "lib"), exist_ok=True)
+        # os.makedirs(os.path.join(self.charm_dir, "mod"), exist_ok=True)
+        # os.makedirs(os.path.join(self.charm_dir, "src"), exist_ok=True)
+        
+        # with open(os.path.join(self.charm_dir, "src", "charm.py"), "w") as charm_file:
+        #     charm_file.write("")
     
-    def clone_proxy_charm(self):
+    # def clone_proxy_charm(self):
 
-        os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
+    #     os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
         
-        os.symlink("../src/charm.py", "hooks/upgrade-charm")
-        os.symlink("../src/charm.py", "hooks/install")
-        os.symlink("../src/charm.py", "hooks/start")
+    #     os.symlink("../src/charm.py", "hooks/upgrade-charm")
+    #     os.symlink("../src/charm.py", "hooks/install")
+    #     os.symlink("../src/charm.py", "hooks/start")
         
-        os.system("git clone https://github.com/canonical/operator mod/operator")
-        os.system("git clone https://github.com/charmed-osm/charms.osm mod/charms.osm")
+    #     os.system("git clone https://github.com/canonical/operator mod/operator")
+    #     os.system("git clone https://github.com/charmed-osm/charms.osm mod/charms.osm")
        
-        os.symlink("../mod/operator/ops", "lib/ops")
-        os.symlink("../mod/charms.osm/charms", "lib/charms")
+    #     os.symlink("../mod/operator/ops", "lib/ops")
+    #     os.symlink("../mod/charms.osm/charms", "lib/charms")
 
     def extract(self):
         self.charm_name = self.charm_info["name"]
@@ -220,7 +222,7 @@ class PackageTool(object):
                     vnf['charm']['credentials'] = list(filter(lambda x: x["id"] == vnf['charm']["credentials"], cloudinit))[0]
                     _charm = Charm(self.env, scenario_vnf_path, vnf['charm'])
                     _charm.parse_all()
-                    _charm.clone_proxy_charm()
+                    # _charm.clone_proxy_charm()
                     vnf_params['charm'] = _charm.variables
                     # print(vnf_params['charm'])
 

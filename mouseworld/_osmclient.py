@@ -165,9 +165,9 @@ class OSMClient(object):
             "nsdId": nsdid,
             "vimAccountId": vimid,
         }
-        advance_instantiation = self.map_internal_networks(vnfs)
-        data_instantiation.update(advance_instantiation)
-        
+        # advance_instantiation = self.map_internal_networks(vnfs)
+        # data_instantiation.update(advance_instantiation)
+        # print(data_instantiation)
         nsid = self.nslcm().create(json.dumps(data_instantiation))['id']
         status = "STARTING"
         ns_info = {}

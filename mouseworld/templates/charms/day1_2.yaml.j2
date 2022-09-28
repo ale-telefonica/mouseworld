@@ -1,20 +1,32 @@
     lcm-operations-configuration:
       operate-vnf-op-config:
         day1-2:
-        - id: {{ charm.target }}
+        - config-primitive:
+          {% for action in charm.actions %}
+          - name: {{action.name}}
+            execution-environment-ref: {{charm.charm_name}}-ee
+            {%if action.parameters%}
+            parameter:
+            {% for parameter in action.parameters %}
+            - data-type: STRING
+              default-value: {{parameter.value}}
+              name: {{parameter.name}}
+            {%endfor%}
+            {%endif%}
+          {%endfor%}
+          config-access:
+            ssh-access:
+              default-user: {{charm.ssh_username}}
+              required: true
           execution-environment-list:
           - id: "{{charm.target}}_env"
-            {% if charm.level == "vdu"%}
-            external-connection-point-ref: management_network_cp_{{ charm.target }} 
-            {% else %} 
-            external-connection-point-ref: {{ interface.mgmt }} 
-            {%endif%}
             juju:
               charm: {{ charm.charm_name }}
-              proxy: True
+              cloud: k8s
+          id: {{ charm.target }}_vnf
           initial-config-primitive:
           {# Define the actions in the charm #}
-          - execution-environment-ref: {{charm.target}}_env
+          - execution-environment-ref: {{charm.charm_name}}-ee
           {# Action "config" is mandatory #}
             seq: '1'
             name: config 
@@ -33,6 +45,7 @@
             {# For multiple action copy and paste the section bellow changing the seq value #}
             {% for action in charm.actions %}
           - name: {{action.name}}
+            execution-environment-ref: {{charm.charm_name}}-ee
             {%if action.parameters%}
             parameter:
               {% for parameter in action.parameters %}

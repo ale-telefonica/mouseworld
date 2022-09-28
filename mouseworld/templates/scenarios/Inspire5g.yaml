@@ -3,40 +3,40 @@ Project:
   description: Inspire5G dinamic scenario where the core5g and the I2NSF-POT agent are deployed. 
 VNFs:
 # For each vnf copy and paste this section
-  - id: Core5g
-    number-of-instances: 1
-    description: Core5g utility
+  # - id: Core5g
+  #   number-of-instances: 1
+  #   description: Core5g utility
   - id: i2nsf
     number-of-instances: 1
     description: I2NSF and PoT agents
 Instances:
 # For each instance copy and paste this section below with the specific parameters of the instance
-  - id: core5g 
-    vnf: Core5g
-    compute: compute-core5g
-    storage: storage-core5g
-    image: Ubuntu2004
-    cloud-init: ubuntu
-    networks:
-      - management_network
-      - I5G_control
-      - I5G_ipsec_internal
+  # - id: core5g 
+  #   vnf: Core5g
+  #   compute: compute-core5g
+  #   storage: storage-core5g
+  #   image: Ubuntu2004
+  #   cloud-init: ubuntu
+  #   networks:
+  #     - management_network
+  #     - I5G_control
+  #     - I5G_ipsec_internal
   - id: i2nsf-pot-agent
     vnf: i2nsf
     compute: compute-i2nsf-pot-agent
     storage: storage-i2nsf-pot-agent
-    image: I2NSF-PoT-Agent
+    image: I2NSF-PoT-Agent_v2
     cloud-init: debian 
     networks:
       - management_network
-      - I5G_control
-      - I5G_ipsec_internal
+      - kk
+      - kk1
       - internet_network
 CloudInit:
-  - id: ubuntu
-    cloud-config: # En esta parte colocar la configuración del cloud init (mismo formato)
-      username: ubuntu
-      password: ubuntu
+  # - id: ubuntu
+  #   cloud-config: # En esta parte colocar la configuración del cloud init (mismo formato)
+  #     username: ubuntu
+  #     password: ubuntu
   - id: debian
     cloud-config:
       username: debian
@@ -73,17 +73,17 @@ Networks:
   - id: internet_network
     type: external
   # In case of multiple networks copy and paste the section below
-  - id: I5G_ipsec_internal
+  - id: kk
     type: internal
     description: Management network for the inspire proyect machines. 
-  - id: I5G_control
+  - id: kk1
     type: internal
     description: Network to connect the core5g with the i2nsf-agents
 Charms:
   - name: example
     vnf: i2nsf
-    level: vdu
-    target: i2nsf-pot-agent # If the action is applied to the entire VNF or if the action is applied to a sigle VDU
+    level: vnf
+    target: i2nsf # If the action is applied to the entire VNF or if the action is applied to a sigle VDU
     credentials: debian
     actions:
       - name: action1

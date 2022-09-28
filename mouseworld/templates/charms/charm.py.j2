@@ -18,8 +18,9 @@ class SampleProxyCharm(SSHProxyCharm):
         # self.framework.observe(self.on.upgrade_charm, self.on_upgrade_charm)
 
         # Listen to the touch action event
-        self.framework.observe(self.on.configure_remote_action, self.configure_remote)
-        self.framework.observe(self.on.start_service_action, self.start_service)
+        {% for action in actions %}
+        self.framework.observe(self.on.{{ action.name }}, self.on_{{ action.name }})
+        {%endfor%}
 
     def on_config_changed(self, event):
         """Handle changes in configuration"""
@@ -35,7 +36,7 @@ class SampleProxyCharm(SSHProxyCharm):
 
     {% for action in actions %}
     {# Configure charm specific action here #}
-    def {{ action.name }}(self, event):
+    def on_{{ action.name }}(self, event):
         """Configure remote action."""
 
         if self.model.unit.is_leader():
@@ -54,7 +55,7 @@ class SampleProxyCharm(SSHProxyCharm):
                 stdout, stderr = proxy.run(cmd)
                 event.set_results({"output": stdout})
             except Exception as e:
-                event.fail("Action failed {}. Stderr: {}".format(e, stderr))
+                event.fail("Action {} failed {}. Stderr: {}".format("{{ action.name }}", e, stderr))
         else:
             event.fail("Unit is not leader")
             
