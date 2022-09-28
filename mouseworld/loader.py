@@ -34,19 +34,21 @@ class Charm(object):
         # Parse charms.yaml file
         with open(os.path.join(self.charm_dir, "src", "charm.py"), 'w') as charm_script:
             charm_script.write(self.proxycharm.render(self.variables))
-            os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
+            # os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
 
         # Parse metadata.yaml file
-        with open(os.path.join(self.charm_dir, "metadata.yaml"), 'w') as metadata:
-            metadata.write(self.metadata.render(self.variables))
+        # with open(os.path.join(self.charm_dir, "metadata.yaml"), 'w') as metadata:
+        #     metadata.write(self.metadata.render(self.variables))
 
         # Parse config.yaml file
-        with open(os.path.join(self.charm_dir, "config.yaml"), 'w') as config:
-            config.write(self.config.render())
+        # with open(os.path.join(self.charm_dir, "config.yaml"), 'w') as config:
+        #     config.write(self.config.render())
 
 
     def setup(self,):
-        shutil.copytree(os.path.join(TEMPLATES_DIR, "charms", "files"), self.charm_dir, symlinks=True)
+        charm_files = tarfile.open(os.path.join(TEMPLATES_DIR, "charms", "charm_files.tar.gz"))
+        charm_files.extractall(self.charm_dir)
+        charm_files.close()
         
         # os.chdir(self.charm_dir)
         # os.makedirs(os.path.join(self.charm_dir, "hooks"), exist_ok=True)
