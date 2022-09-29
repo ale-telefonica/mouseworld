@@ -88,8 +88,6 @@ Charms:
     actions:
       - name: action1
         parameters:
-          - name: text
-            value: "Texto creado por proxycharm"
           - name: filename
             value: /home/ubuntu/hello_charm.txt
-        command: echo {text} > {filename}  # To reference a parameter in the command yo can use $param_name
+        command: touch {filename}  # To reference a parameter in the command yo can use $param_name
