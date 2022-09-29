@@ -19,7 +19,7 @@ class SampleProxyCharm(SSHProxyCharm):
 
         # Listen to the touch action event
         {% for action in actions %}
-        self.framework.observe(self.on.{{ action.name }}, self.on_{{ action.name }})
+        self.framework.observe(self.on.{{ action.name }}_action, self.on_{{ action.name }})
         {%endfor%}
 
     def on_config_changed(self, event):

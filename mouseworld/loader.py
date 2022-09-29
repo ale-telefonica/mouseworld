@@ -20,11 +20,9 @@ class Charm(object):
         self.proxycharm = self.env.get_template("charm.py.j2")
         self.metadata = self.env.get_template("metadata.yaml.j2")
         self.config = self.env.get_template("config.yaml.j2")
-        # self.day1_2 = self.env.get_template("day1_2.yaml.j2")
         
         self.extract()
         self.setup()
-        
 
     def parse_all(self):
         # Parse actions.yaml file
@@ -34,44 +32,11 @@ class Charm(object):
         # Parse charms.yaml file
         with open(os.path.join(self.charm_dir, "src", "charm.py"), 'w') as charm_script:
             charm_script.write(self.proxycharm.render(self.variables))
-            # os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
-
-        # Parse metadata.yaml file
-        # with open(os.path.join(self.charm_dir, "metadata.yaml"), 'w') as metadata:
-        #     metadata.write(self.metadata.render(self.variables))
-
-        # Parse config.yaml file
-        # with open(os.path.join(self.charm_dir, "config.yaml"), 'w') as config:
-        #     config.write(self.config.render())
-
 
     def setup(self,):
         charm_files = tarfile.open(os.path.join(TEMPLATES_DIR, "charms", "charm_files.tar.gz"))
         charm_files.extractall(self.charm_dir)
         charm_files.close()
-        
-        # os.chdir(self.charm_dir)
-        # os.makedirs(os.path.join(self.charm_dir, "hooks"), exist_ok=True)
-        # os.makedirs(os.path.join(self.charm_dir, "lib"), exist_ok=True)
-        # os.makedirs(os.path.join(self.charm_dir, "mod"), exist_ok=True)
-        # os.makedirs(os.path.join(self.charm_dir, "src"), exist_ok=True)
-        
-        # with open(os.path.join(self.charm_dir, "src", "charm.py"), "w") as charm_file:
-        #     charm_file.write("")
-    
-    # def clone_proxy_charm(self):
-
-    #     os.chmod(os.path.join(self.charm_dir, "src", "charm.py"), 775)
-        
-    #     os.symlink("../src/charm.py", "hooks/upgrade-charm")
-    #     os.symlink("../src/charm.py", "hooks/install")
-    #     os.symlink("../src/charm.py", "hooks/start")
-        
-    #     os.system("git clone https://github.com/canonical/operator mod/operator")
-    #     os.system("git clone https://github.com/charmed-osm/charms.osm mod/charms.osm")
-       
-    #     os.symlink("../mod/operator/ops", "lib/ops")
-    #     os.symlink("../mod/charms.osm/charms", "lib/charms")
 
     def extract(self):
         self.charm_name = self.charm_info["name"]
@@ -114,7 +79,8 @@ class MouseworldLoader(BaseLoader):
 
 
 class PackageTool(object):
-    def __init__(self, scenario):
+    """Build package tool"""
+    def __init__(self, scenario:str):
         self.scenario = scenario
         self.scenario_ns_path = os.path.join(SCENARIOS_DIR, self.scenario, f'{self.scenario}_ns')
         self.scenario_vnf_paths = []
