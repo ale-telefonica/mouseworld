@@ -19,7 +19,7 @@
               default-user: {{charm.ssh_username}}
               required: true
           execution-environment-list:
-          - id: "{{charm.target}}_env"
+          - id: {{charm.charm_name}}-ee
             juju:
               charm: {{ charm.charm_name }}
               cloud: k8s
