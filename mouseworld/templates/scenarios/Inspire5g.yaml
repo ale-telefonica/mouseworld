@@ -70,8 +70,8 @@ Networks:
 # By default all instances are conected to management network
   - id: management_network
     type: external
-  - id: internet_network
-    type: external
+  # - id: internet_network
+  #   type: external
   # In case of multiple networks copy and paste the section below
   - id: I5G_control
     type: internal

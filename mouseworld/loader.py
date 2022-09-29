@@ -159,8 +159,11 @@ class PackageTool(object):
                     vdu['cloud_init_file'] = cloud_init_file
                     
                     cloud_init_info = vdu['cloud-init']['cloud-config']
+                    cloud_init_extra = cloud_init_info.copy()
+                    cloud_init_extra.pop("username")
                     content = self.cloud_init.render({"hostname": vdu['id']})
-                    extra = yaml.safe_dump(cloud_init_info)
+                    extra = yaml.safe_dump(cloud_init_extra)
+                    
                     content = content + "\n" + extra
 
                     with open(join(scenario_vnf_path, 'cloud_init', cloud_init_file), 'w') as cloud_init:
@@ -265,7 +268,7 @@ class PackageTool(object):
         self.nspkg = self.make_tarfile(self.scenario_ns_path+'.tar.gz', self.scenario_ns_path)
 
 
-class IterJ:
+class IterJ(dict):
     """
     Data structure to traverse json objects
 
@@ -292,6 +295,9 @@ class IterJ:
         else:
             value = self.obj[key]
         return IterJ(value)
+
+    def __getitem__(self, key):
+        return IterJ(self.value[key])
 
 
 if __name__=='__main__':
