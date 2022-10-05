@@ -22,7 +22,7 @@
           - id: {{charm.charm_name}}-ee
             juju:
               charm: {{ charm.charm_name }}
-              cloud: k8s
+              cloud: {{ charm.cloud }}
           id: {{ charm.target }}_vnf
           initial-config-primitive:
           {# Define the actions in the charm #}
