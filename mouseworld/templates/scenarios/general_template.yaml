@@ -55,6 +55,18 @@ Mirroring:
       service: <service id>
       direction: BOTH # BOTH is the default config if you want IN or OUT instead change it
   description: <optional description>
-
-# Not defined yet a configuration section that is passed with juju charms
-# Config:
+Charms:
+  - name: <name>
+    vnf: <VNF name> 
+    level: <vnf o vdu>
+    target: <name of target vnf o vdu> # If the action is applied to the entire VNF or if the action is applied to a sigle VDU
+    credentials: <cloudinit name>
+    cloud: <lxd o k8s> # Cloud to deploy proxycharm by default lxd
+    actions: # List of actions
+      - name: <action name>
+        parameters: # List of parámeters
+          - name: <Parameter name>
+            value: <Parameter value>
+        # To reference a parameter in the command yo can use curly braces 
+        # example: {<param_name>}
+        command: <Command to execute>  

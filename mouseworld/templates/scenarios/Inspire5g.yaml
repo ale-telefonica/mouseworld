@@ -85,6 +85,7 @@ Charms:
     level: vnf
     target: Core5g # If the action is applied to the entire VNF or if the action is applied to a sigle VDU
     credentials: ubuntu
+    cloud: k8s
     actions:
       - name: action1
         parameters:

@@ -22,7 +22,7 @@ lcm-operations-configuration:
       - id: {{charm.target}}_env
         juju:
           charm: {{ charm.charm_name }}
-          cloud: k8s
+          cloud: {{ charm.cloud }}
       id: {{ charm.target }}_vnf
       initial-config-primitive:
       - name: config
