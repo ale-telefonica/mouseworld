@@ -3,6 +3,7 @@
 # Version: 1.0.0
 # -------------------------------
 # General Schema
+# Deprecated, instead osm client library it is been used
 from schema import SCHEMA
     
 class Nsd(SCHEMA, object):

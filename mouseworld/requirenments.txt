@@ -1,0 +1,5 @@
+osmclient
+requests
+pyyaml
+openstackclient
+jinja2

@@ -24,7 +24,7 @@ class Charm(object):
         self.extract()
         self.setup()
 
-    def parse_all(self):
+    def write_to_file(self):
         # Parse actions.yaml file
         with open(os.path.join(self.charm_dir, "actions.yaml"), 'w') as charm_action_file:
             charm_action_file.write(self.actions.render(self.variables))
@@ -39,9 +39,8 @@ class Charm(object):
         charm_files.close()
 
     def extract(self):
-        self.charm_name = self.charm_info["name"]
-        self.charm_dir = os.path.join(self.vnf_path, "charms", self.charm_name)
-        name = self.charm_info['name']
+        name = self.charm_info["name"]
+        self.charm_dir = os.path.join(self.vnf_path, "charms", name)
         vnf = self.charm_info['vnf']
         target = self.charm_info['target']
         level = self.charm_info['level']
@@ -192,7 +191,7 @@ class PackageTool(object):
                     vnf['charm'] = charm[0]
                     vnf['charm']['credentials'] = list(filter(lambda x: x["id"] == vnf['charm']["credentials"], cloudinit))[0]
                     _charm = Charm(self.env, scenario_vnf_path, vnf['charm'])
-                    _charm.parse_all()
+                    _charm.write_to_file()
                     # _charm.clone_proxy_charm()
                     vnf_params['charm'] = _charm.variables
                     # print(vnf_params['charm'])

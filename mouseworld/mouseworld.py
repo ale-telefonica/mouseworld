@@ -93,7 +93,6 @@ def deploy(
     osm_config_file=settings.OSM_ACCESS_FILE,
     os_config_file=settings.OS_ACCESS_FILE,
 ):
-    create_vim = create_vim
     scenario = ctx.obj['scenario']
 
     pkg = load_scenario(scenario)
@@ -134,11 +133,11 @@ def deploy(
             else:
                 raise(Exception(f"Image {sw_image} not found in image folder"))
 
-    # Create VNF package
+    # Create VNFD package
     for vnfpkg in pkg.vnfpkgs:
         vnfdid =osm_client.create_vnfd_pkg(vnfpkg)
         
-    # Create NS package
+    # Create NSD package
     nsdid = osm_client.create_nsd_pkg(pkg.nspkg)
 
     # Instantiate NS
