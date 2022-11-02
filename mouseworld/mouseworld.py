@@ -33,32 +33,9 @@ from _osmclientv2 import OSMClient
 # from _osmclient import OSMClient
 from os_client import OpenstackClient
 
+from utils import Config
 import settings
 
-class PackageToolClone(PackageTool):
-    pass
-
-class Config(object):
-    def __init__(self, config_file, _type=None):
-        self.type = _type
-        with open(config_file) as configfd:
-            self.config = load(configfd, Loader)
-
-        self.validate_config_file()
-
-    def validate_config_file(self):
-        if self.type == "OSM":
-            validator = settings.OSM_ACCESS_FILE_FILEDS
-        elif self.type == "Openstack":
-            validator = settings.OS_ACCESS_FILE_FILEDS
-        for key in self.config:
-            if key not in validator:
-                raise(Exception(
-                    f"{self.type} configuration file fields are incorrect. Please fix it using de fields specified in settings."))
-        return True
-
-    def __getattr__(self, __name: str):
-        return self.config[__name]
 
 @click.group()
 @click.pass_context
