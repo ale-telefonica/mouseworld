@@ -87,7 +87,7 @@ def deploy(
     os_config = Config(os_config_file, _type='Openstack')
 
     # Create osmclient instance
-    osm_client = OSMClient(**osm_config.config)
+    osm_client = OSMClient(osm_config)
     
     # Create openstack client instance
     os_client = OpenstackClient(**os_config.config)
@@ -103,7 +103,7 @@ def deploy(
         else:
             raise(Exception(
                 f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, please create it on OSM."))
-
+    
     # if not osm_client.vim_exists(os_config.OS_PROJECT_NAME):
     #     # Create vim conection
     #     print(

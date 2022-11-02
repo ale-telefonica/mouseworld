@@ -11,7 +11,7 @@ from enum import Enum
 import os
 
 # Project imports
-from mouseworld import Config
+from utils import Config
 from settings import OPENSTACK_MANAGEMENT_NETWORK
 
 # OSM library imports
@@ -49,9 +49,9 @@ class Artifact(ABC):
             return object_data
         except NotFound:
             return False
-        except Exception as e:
-            print("Error: ", e)
-            exit(1)
+        # except Exception as e:
+        #     print(f"Error getting {self.artifact_type.name}: ", e)
+        #     exit(1)
     
     def create(self, path_to_descriptor: str, **kwargs):
         """Create descriptors (NSD, VNFD), other artifacts may implement it´s own create method"""
@@ -75,7 +75,7 @@ class Artifact(ABC):
 @dataclass
 class VIM(Artifact):
     """Class that define specific implementations for a VIM"""
-    artifact_type: Type.VIM
+    artifact_type: Type = Type.VIM
 
     def create(self, os_config, vim_type="openstack", **kwargs):
         if self.exist(os_config.OS_PROJECT_NAME):
@@ -102,9 +102,9 @@ class VIM(Artifact):
         except KeyError:
             print(f"The fields specified to create VIM are incorrect: {vim_access}")
             exit(1)
-        except Exception as e:
-            print("Error: ", e)
-            exit(1)
+        # except Exception as e:
+        #     print("Error: ", e)
+        #     exit(1)
 
 
 @dataclass
@@ -147,7 +147,7 @@ class OSMClient:
         self.password = osm_config.OSM_PASSWORD
         self.http_handler = None
         self.auth_info = None
-        self.hostname = f'https://{osm_config.OSM_URL}'
+        self.hostname = osm_config.OSM_URL
         self.instatiation_timeout = 300
 
         try:
