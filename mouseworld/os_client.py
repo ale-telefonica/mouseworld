@@ -1,3 +1,9 @@
+# -------------------------------
+# Author: Alejandro Martin Herve
+# Version: 1.0.0
+# -------------------------------
+# Interface with Openstack
+
 import requests
 import openstack
 import json

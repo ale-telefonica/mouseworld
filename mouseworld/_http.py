@@ -1,11 +1,15 @@
-# HTTP handler to make requests
+# -------------------------------
+# Author: Alejandro Martin Herve
+# Version: 2.0.0
+# -------------------------------
+# HTTP handler, to interact with OSM and Openstack APIs
 
 # Imports
 import requests
 
 class HTTP(object):
     """
-    Class to interact with the OSM API
+    Class to interact with the OSM and Openstack APIs
 
     :DEFAULT_HTTP_HEADER: Minimum header to use in every request
     """

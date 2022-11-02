@@ -1,26 +1,30 @@
+# -------------------------------
 # Author: Alejandro Martin Herve
 # Version: 1.0.0
+# -------------------------------
+# Interface with OSM using API calls
 
 
 """
 Documentación
 """
 
-# Imports
+# Built-in Imports
 import re
 import os
 import time
 import json
 from datetime import datetime as dt
+from requests.exceptions import HTTPError
+from urllib3.exceptions import InsecureRequestWarning
+import warnings
+warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
+# Project imports
 from settings import OPENSTACK_MANAGEMENT_NETWORK
 import osm_api_schema as api
 import _http
 
-from requests.exceptions import HTTPError
-from urllib3.exceptions import InsecureRequestWarning
-import warnings
-warnings.filterwarnings("ignore", category=InsecureRequestWarning) 
 
 
 class OSMClient(object):
@@ -114,7 +118,7 @@ class OSMClient(object):
         print(f"Creating VNF package {os.path.basename(vnfpkg).split('.')[0]} ...")
         return self.create_pkg(vnfpkg, 'vnfd')  
 
-    def create_vim(self, os_config):
+    def create_vim(self, os_config, type="openstack"):
         # Method to assemble vim data
         # :os_config: Object of type Config
         # :return: json response with de result of the vim creation
