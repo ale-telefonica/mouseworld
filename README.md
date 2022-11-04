@@ -4,12 +4,27 @@ Software to automate Network Services deployments using Open Source Mano and Ope
 ## Requirenments
 1. Install osmcllient
 
+### Snap Installation
 ```
 sudo snap install osmclient
 ```
 
+### Debian package installation
+```
+sudo sed -i "/osm-download.etsi.org/d" /etc/apt/sources.list
+wget -qO - https://osm-download.etsi.org/repository/osm/debian/ReleaseTWELVE/OSM%20ETSI%20Release%20Key.gpg | sudo apt-key add -
+sudo add-apt-repository -y "deb [arch=amd64] https://osm-download.etsi.org/repository/osm/debian/ReleaseTWELVE stable devops IM osmclient"
+sudo apt-get update
+sudo apt-get install -y python3-pip
+sudo -H python3 -m pip install -U pip
+sudo -H python3 -m pip install python-magic pyangbind verboselogs
+sudo apt-get install python3-osmclient
+```
+
 2. Install python packages
+```
 pip install -r requirenments.txt
+```
 
 ## Configuration
 ### Before running the program the configuration files must be filled
