@@ -93,28 +93,9 @@ def deploy(
     os_client = OpenstackClient(**os_config.config)
     os_client.connect()
     
-    # Check if there is a vim conection with the specified name
-    if not (vim_data:=osm_client.vim.exist(os_config.OS_PROJECT_NAME)):
-        print(
-            f"VIM conection <{os_config.OS_PROJECT_NAME}> does not exist")
-        if create_vim:
-            print(f"Creating VIM <{os_config.OS_PROJECT_NAME}>")
-            vimid = osm_client.vim.create(os_config)
-        else:
-            raise(Exception(
-                f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, please create it on OSM."))
-    
-    # if not osm_client.vim_exists(os_config.OS_PROJECT_NAME):
-    #     # Create vim conection
-    #     print(
-    #         f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, and will be created")
-    #     if create_vim:
-    #         vimid = osm_client.create_vim(os_config)['id']
-    #     else:
-    #         raise(Exception(
-    #             f"Vim conection <{os_config.OS_PROJECT_NAME}> does not exist, please create it on OSM."))
-    # else:
-    #     vimid = osm_client.get_id(os_config.OS_PROJECT_NAME, "vims")
+    # Check VIM conection
+    vim_name = os_config.OS_PROJECT_NAME
+    osm_client.vim.create(os_config)
 
     for sw_image in pkg.images:
         if not os_client.image_exists(sw_image):
@@ -129,17 +110,13 @@ def deploy(
 
     # Create VNFD package
     for vnfpkg in pkg.vnfpkgs:
-        vnfdid =osm_client.create_vnfd_pkg(vnfpkg)
+        vnfdid =osm_client.vnfd.create(vnfpkg)
         
     # Create NSD package
-    nsdid = osm_client.create_nsd_pkg(pkg.nspkg)
+    nsd_name = osm_client.nsd.create(pkg.nspkg)
 
     # Instantiate NS
-    if not osm_client.get_id(scenario, "nslcm"):
-        nsid = osm_client.create_ns_instance(scenario, nsdid, vimid, pkg.vnfs2, wait=True)
-    else:
-        print("A NS instance already exist, please rename new NS or delete old one")
-        exit()
+    osm_client.ns.create(scenario, vim_name)
         
     if pkg.mirroring:
         print("Creating Mirroring...")

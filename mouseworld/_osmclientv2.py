@@ -11,7 +11,7 @@ from enum import Enum
 import os
 
 # Project imports
-from utils import Config
+from utils import Config, IterJ
 from settings import OPENSTACK_MANAGEMENT_NETWORK
 
 # OSM library imports
@@ -46,7 +46,7 @@ class Artifact(ABC):
     def exist(self, name):
         try:
             object_data = self.object.get(name)
-            return object_data
+            return IterJ(object_data)
         except NotFound:
             return False
         # except Exception as e:
@@ -58,7 +58,7 @@ class Artifact(ABC):
         name = os.path.basename(path_to_descriptor)
         if self.exist(name):
             print(f"{self.artifact_type.name} {name} already exist, not creating")
-            return None
+            return name
         
         try:
             nsdid = self.object.create(path_to_descriptor)
@@ -78,10 +78,13 @@ class VIM(Artifact):
     artifact_type: Type = Type.VIM
 
     def create(self, os_config, vim_type="openstack", **kwargs):
-        if self.exist(os_config.OS_PROJECT_NAME):
+        if (vim_data:=self.exist(os_config.OS_PROJECT_NAME)):
             print(f"VIM {os_config.OS_PROJECT_NAME} already exist, not creating")
-            return None
+            return vim_data._id
         
+        print(
+            f"VIM conection <{os_config.OS_PROJECT_NAME}> does not exist")
+
         vim_access = {
             'vim-url': os_config.OS_AUTH_URL, 
             'vim-tenant-name': os_config.OS_PROJECT_NAME, 
@@ -94,11 +97,13 @@ class VIM(Artifact):
                 "management_network_name": OPENSTACK_MANAGEMENT_NETWORK,
                 "disable_network_port_security": True}
         try:
-            vimid = self.object.create(
+            print(f"Creating VIM <{os_config.OS_PROJECT_NAME}>")
+            self.object.create(
                 os_config.OS_PROJECT_NAME,
                 vim_access,
                 config)
-            return vimid
+            print(f"VIM <{os_config.OS_PROJECT_NAME}> created")
+            return
         except KeyError:
             print(f"The fields specified to create VIM are incorrect: {vim_access}")
             exit(1)

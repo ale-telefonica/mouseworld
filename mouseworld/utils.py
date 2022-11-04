@@ -1,5 +1,6 @@
 from yaml import load, Loader
 import settings
+from dataclasses import dataclass
 
 class Config(object):
     def __init__(self, config_file, _type=None):
@@ -23,8 +24,8 @@ class Config(object):
     def __getattr__(self, __name: str):
         return self.config[__name]
 
-
-class IterJ(dict):
+@dataclass
+class IterJ:
     """
     Data structure to traverse json objects
 
@@ -35,22 +36,20 @@ class IterJ(dict):
     is a number representing then index of the values you want access.
 
     To access the final result the value attribute must be called
-    Example: iterj.key.i1.key.value
+    Example: iterj.key.i1.key.obj
     
     :param: obj: Json object to traverse
     """
-    def __init__(self, obj):
-        self.obj = obj
-        self.value = self.obj
+    obj: dict
 
     def __getattr__(self, key):
         if isinstance(self.obj, list):
             value = self.obj[int(key[1])]
         elif isinstance(self.obj, str) and key != "value":
-            raise(TypeError(f"You are trying to access a string <{self.obj}> using key={key}"))
+            return self.obj
         else:
             value = self.obj[key]
         return IterJ(value)
 
     def __getitem__(self, key):
-        return IterJ(self.value[key])
+        return IterJ(self.obj[key])
