@@ -54,7 +54,7 @@ class Artifact(ABC):
         #     print(f"Error getting {self.artifact_type.name}: ", e)
         #     exit(1)
 
-    def create(self, path_to_descriptor: str, **kwargs):
+    def create(self, path_to_descriptor: str, **kwargs) -> str:
         """Create descriptors (NSD, VNFD), other artifacts may implement it´s own create method"""
         name = os.path.basename(path_to_descriptor)
         print(f"[!] Creating {self.artifact_type.name} {name}")
@@ -65,13 +65,17 @@ class Artifact(ABC):
         self.object.create(path_to_descriptor)
         return name
 
-    def delete(self, artifact_name, **kwargs):
+    def delete(self, artifact_name:str, **kwargs) -> bool: 
         """Delete artifact object from OSM"""
         print(f"[!] Deleting {self.artifact_type.name} <{artifact_name}> ...")
+        if not self.exist(artifact_name):
+            print(f"  {self.artifact_type.name} {artifact_name} does not exit. Not deleting")
+            return None
         if "wait" in kwargs:
             self.object.delete(artifact_name, wait=True)
         else:
             self.object.delete(artifact_name)
+        return True
 
 @dataclass
 class VIM(Artifact):

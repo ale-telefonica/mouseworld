@@ -22,10 +22,11 @@
 
 # TODO: Add support for passing ssh public keys [Not a priority]
 
-from yaml import load, Loader
+
 import os
-import click
+import glob
 import pickle
+import click
 
 from loader import PackageTool
 from _osmclientv2 import OSMClient
@@ -41,36 +42,35 @@ def load_scenario(scenario):
     Load already built scenario
     """
     path = os.path.join(settings.TEMP_DIR, scenario)
-    if os.path.exists(path):
-        with open(path, "rb") as package_fd:
-            pkg = pickle.load(package_fd)
+    if not os.path.exists(path):
+        return None
+    with open(path, "rb") as package_fd:
+        pkg = pickle.load(package_fd)
     return pkg
+
 
 def load_config(
     osm_config_file=settings.OSM_ACCESS_FILE,
     os_config_file=settings.OS_ACCESS_FILE
-    ):
+):
     """Load osm and openstack access credentials and validate config files"""
     osm_config = Config(osm_config_file, _type="OSM")
     os_config = Config(os_config_file, _type='Openstack')
     return osm_config, os_config
 
+
 @click.group()
-@click.pass_context
-@click.option("--scenario", required=True, type=str, help="Name of the scenario template to build (Template must exist in templates/scenarios folder)")
-def cli_mw(ctx, scenario):
-    ctx.obj["scenario"] = scenario
+def cli_mw():
+    pass
 
 
 @cli_mw.command(short_help="Build scenario template")
-@click.pass_context
-def build(ctx):
+@click.option("--scenario", "-s", required=True, type=str, help="Name of the scenario template to build (Template must exist in templates/scenarios folder)")
+def build(scenario):
     # Create scenario packages
-    scenario = ctx.obj["scenario"]
     pkg = PackageTool(scenario)
     try:
         pkg.build_scenario()
-        ctx.obj["pkg"] = pkg
         with open(os.path.join(settings.TEMP_DIR, scenario), "wb") as package_fd:
             pickle.dump(pkg, package_fd)
     except FileNotFoundError as exc:
@@ -82,11 +82,10 @@ def build(ctx):
 
 
 @cli_mw.command(short_help="Deploy already build scenario")
-@click.pass_context
-def deploy(ctx):
+@click.option("--scenario", "-s", required=True, type=str, help="Name of the scenario to deploy (Scenario must be built before deploy it)")
+def deploy(scenario):
     """Deploy already build scenario"""
 
-    scenario = ctx.obj['scenario']
     pkg = load_scenario(scenario)
     osm_config, os_config = load_config()
 
@@ -110,7 +109,7 @@ def deploy(ctx):
 
     # Create NSD package
     nsd_name = osm_client.nsd.create(pkg.scenario_ns_path)
-    
+
     # Instantiate NS
     osm_client.ns.create(nsd_name, scenario, vim_name)
 
@@ -122,14 +121,17 @@ def deploy(ctx):
     os_client.close()
 
     print("[!] Finish")
-    
+
+
 @cli_mw.command(short_help="Destroy scenario")
-@click.pass_context
-def destroy(ctx):
+@click.option("--scenario", "-s", required=True, type=str, help="Name of the scenario to destroy")
+def destroy(scenario):
     """Destroy deployed scenario"""
-    scenario = ctx.obj['scenario']
+    print(f"[!] Destroying scenario {scenario}")
     path = os.path.join(settings.TEMP_DIR, scenario)
     pkg = load_scenario(scenario)
+    if not pkg:
+        print(f"  Scenario {scenario} have not been built")
     osm_config, _ = load_config()
     osm_client = OSMClient(osm_config)
 
@@ -142,15 +144,25 @@ def destroy(ctx):
     # Delete vnf descriptors
     for vnfpkg in pkg.scenario_vnf_paths:
         osm_client.vnfd.delete(os.path.basename(vnfpkg))
-    
+
     # Remove scenario configuration
     os.remove(path)
 
 
-# def destroy(scenario):
-#     # Delete network service from OSM
-#     nslcm_id = osm_client.get_id(scenario, "nslcm")
+@click.command(help="List scenarios")
+def list_scenarios():
+    """
+    List the scenarios that have been build with this tool
+    """
+    print("Scenarios:")
+    scenarios = list(filter(lambda x: not x.endswith(".txt"),
+                       glob.glob(os.path.join(settings.TEMP_DIR, "*"))))
+    if not scenarios:
+        print("  Not scenarios have been built")
+    for scenario in scenarios:
+        print("- ", os.path.basename(scenario).strip(".yaml"))
 
+cli_mw.add_command(list_scenarios)
 
 if __name__ == '__main__':
     cli_mw(obj={})
