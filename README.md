@@ -2,14 +2,14 @@
 Software to automate Network Services deployments using Open Source Mano and Openstack in MouseWorld Lab
 
 ## Requirenments
-1. Install osmcllient
+### 1. Install osmcllient
 
-### Snap Installation
++ Snap Installation
 ```
 sudo snap install osmclient
 ```
 
-### Debian package installation
++ Debian package installation
 ```
 sudo sed -i "/osm-download.etsi.org/d" /etc/apt/sources.list
 wget -qO - https://osm-download.etsi.org/repository/osm/debian/ReleaseTWELVE/OSM%20ETSI%20Release%20Key.gpg | sudo apt-key add -
@@ -21,7 +21,7 @@ sudo -H python3 -m pip install python-magic pyangbind verboselogs
 sudo apt-get install python3-osmclient
 ```
 
-2. Install python packages
+### 2. Install python packages
 ```
 pip install -r requirenments.txt
 ```
