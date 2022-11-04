@@ -118,10 +118,11 @@ def deploy(scenario):
     osm_client.ns.create(nsd_name, scenario, vim_name)
 
     if pkg.mirroring:
+        # Create mirroring
         print("Creating Mirroring...")
         list(map(os_client.create_mirror, pkg.mirror))
 
-    # Close clients conections
+    # Close client conections
     os_client.close()
 
     print("[!] Finish")
@@ -135,7 +136,6 @@ def destroy(scenario):
 
     print(f"[!] Destroying scenario {scenario}")
     path = os.path.join(settings.TEMP_DIR, scenario)
-    
 
     osm_config, _ = load_config()
     osm_client = OSMClient(osm_config)
@@ -155,7 +155,7 @@ def destroy(scenario):
     print(f"[!] Destroyed scenario <{scenario}>")
 
 
-@click.command(help="List scenarios")
+@cli_mw.command(short_help="List built scenarios")
 def list_scenarios():
     """
     List the scenarios that have been build with this tool
@@ -169,9 +169,5 @@ def list_scenarios():
         print("- ", os.path.basename(scenario).strip(".yaml"))
 
 
-cli_mw.add_command(list_scenarios)
-
 if __name__ == '__main__':
-    cli_mw(obj={})
-    # deploy('hackfest_custom', create_vim=True)
-    # destroy('hackfest_custom')
+    cli_mw()

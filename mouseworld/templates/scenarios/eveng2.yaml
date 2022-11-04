@@ -1,0 +1,110 @@
+Project:
+  Name: Test
+  description: version1
+VNFs:
+- id: VPC4
+  number-of-instances: 1
+  description: vpcs
+- id: VPC1
+  number-of-instances: 1
+  description: vpcs
+- id: Linux
+  number-of-instances: 1
+  description: linux
+- id: VPC3
+  number-of-instances: 1
+  description: vpcs
+- id: VPC2
+  number-of-instances: 1
+  description: vpcs
+Instances:
+- id: VPC4
+  vnf: VPC4
+  compute: computeVPC4
+  storage: storageVPC4
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - Net-VPC4iface_0
+- id: VPC1
+  vnf: VPC1
+  compute: computeVPC1
+  storage: storageVPC1
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - Net-VPC1iface_0
+- id: Linux
+  vnf: Linux
+  compute: computeLinux
+  storage: storageLinux
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - Net-Linuxiface_0
+- id: VPC3
+  vnf: VPC3
+  compute: computeVPC3
+  storage: storageVPC3
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - Net-VPC3iface_0
+- id: VPC2
+  vnf: VPC2
+  compute: computeVPC2
+  storage: storageVPC2
+  image: Ubuntu2004
+  cloud-init: ubuntu
+  networks:
+  - management_network
+  - Net-VPC2iface_0
+Compute:
+- id: computeVPC4
+  ram: '4'
+  vcpus: '2'
+- id: computeVPC1
+  ram: '4'
+  vcpus: '2'
+- id: computeLinux
+  ram: '4'
+  vcpus: '2'
+- id: computeVPC3
+  ram: '4'
+  vcpus: '2'
+- id: computeVPC2
+  ram: '4'
+  vcpus: '2'
+Storage:
+- id: storageVPC4
+  amount: '10'
+- id: storageVPC1
+  amount: '10'
+- id: storageLinux
+  amount: '20'
+- id: storageVPC3
+  amount: '10'
+- id: storageVPC2
+  amount: '10'
+Networks:
+- id: management_network
+  type: external
+- id: Net-VPC4iface_0
+  type: internal
+- id: Net-VPC1iface_0
+  type: internal
+- id: Net-Linuxiface_0
+  type: internal
+- id: Net-VPC3iface_0
+  type: internal
+- id: Net-VPC2iface_0
+  type: internal
+CloudInit:
+- id: ubuntu
+  cloud-config:
+    username: ubuntu
+    password: ubuntu
