@@ -14,7 +14,7 @@
 !/*/logs/*.txt
 
 # Visual Studio Code files
-.vscode/*
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
