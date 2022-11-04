@@ -1,11 +1,14 @@
-import os
-
 """
 This file record the necesary variables to be used in the scripts.
 The purpose of this file is to isolate configuration from code in the way that
 modifications in the configuration can be made without touching the code
 """
 
+import os
+import logging
+
+
+##############################################################
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 CONFIG_DIR = os.path.join(BASE_PATH, 'config')
 SCENARIOS_DIR = os.path.join(BASE_PATH, 'scenarios')
@@ -38,3 +41,39 @@ OSM_ACCESS_FILE_FILEDS = [
 ]
 
 OPENSTACK_MANAGEMENT_NETWORK = "management_network"
+
+#############################################################
+# Logging configuration
+LOGGING_ACTIVATED = True
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s - %(name)s - %(process:d)s - %(levelname)s - %(message)s',
+        },
+        'simple': {
+            'format': '%(levelname)s - %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'cls': logging.StreamHandler,
+            'formatter': 'simple'
+        },
+        # 'mail_admins': {
+        #     'level': 'ERROR',
+        #     'cls': 'django.utils.log.AdminEmailHandler',
+        #     'filters': ['special']
+        # }
+    },
+    'loggers': {
+        'mouseworld': {
+            'handlers': ['console'],
+        },
+        # 'mouseworld_error': {
+        #     'handlers': ['mail_admins'],
+        #     'level': 'ERROR',
+    }
+}

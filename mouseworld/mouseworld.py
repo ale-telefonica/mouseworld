@@ -1,8 +1,10 @@
-# -------------------------------
-# Author: Alejandro Martin Herve
-# Version: 1.0.0
-# -------------------------------
-# Main Program
+"""
+-------------------------------
+Author: Alejandro Martin Herve
+Version: 2.0.0
+-------------------------------
+Main Program
+"""
 
 # Pasos del contructor:
 # 1. Cargar solicitud
@@ -11,7 +13,8 @@
 # 4. Cargar paquetes vnf y ns
 # *. Cargar credenciales de acceso OSM
 # 5. Crear conexion con Openstack para el proyecto que se vaya a desplegar
-#   - Cargar variables de entorno desde el archivo openstack_access.yaml para realizar la conexión con el proyecto especifico de openstack
+#   - Cargar variables de entorno desde el archivo openstack_access.yaml para
+#     realizar la conexión con el proyecto especifico de openstack
 #   - Comprobar que el proyecto a desplegar existe, sino añadir opcion de crearlo
 #   - Añadir conexion con vim si no existe
 # 6. Comprobar que las imagenes del paquete cargado se encuentran en Openstack
@@ -28,13 +31,13 @@ import glob
 import pickle
 import click
 
+import settings
 from loader import PackageTool
-from _osmclientv2 import OSMClient
+# from _osmclientv2 import OSMClient
 # from _osmclient import OSMClient
 from os_client import OpenstackClient
+from utils import Config, Logger
 
-from utils import Config
-import settings
 
 
 def load_scenario(scenario):
@@ -160,14 +163,18 @@ def list_scenarios():
     """
     List the scenarios that have been build with this tool
     """
-    print("Scenarios:")
     scenarios = list(filter(lambda x: not x.endswith(".txt"),
                             glob.glob(os.path.join(settings.TEMP_DIR, "*"))))
+    logger.debug(f"Scenarios {scenarios}")
+    print("Scenarios:")
     if not scenarios:
         print("  Not scenarios have been built")
     for scenario in scenarios:
         print("- ", os.path.basename(scenario).strip(".yaml"))
 
 
+
 if __name__ == '__main__':
+    if settings.LOGGING_ACTIVATED:
+        logger = Logger("mouseworld")
     cli_mw()

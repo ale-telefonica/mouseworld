@@ -5,9 +5,11 @@ import tarfile
 from os.path import getmtime, join
 from yaml import load, Loader, safe_dump
 from jinja2 import Environment, BaseLoader, TemplateNotFound
+from utils import Logger
+from settings import SCENARIOS_DIR, TEMPLATES_DIR, LOGGING_ACTIVATED
 
-from settings import SCENARIOS_DIR, TEMPLATES_DIR
-
+if LOGGING_ACTIVATED:
+    logger = Logger("mouseworld.loader")
 
 class Charm(object):
     """Class to create a charm"""
@@ -239,6 +241,7 @@ class PackageTool(object):
         self.vnfd = ""
         self.cloud_init = ""
         self.env = ""
+        logger.debug(f"Clean serialized objects for {self.scenario}")
 
     def clean_scenario_folder(self):
         if os.path.exists(join(SCENARIOS_DIR, self.scenario)):

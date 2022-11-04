@@ -1,6 +1,15 @@
-from yaml import load, Loader
-import settings
+"""
+-------------------------------
+Author: Alejandro Martin Herve
+Version: 1.0.0
+-------------------------------
+Main Program
+"""
+import logging
 from dataclasses import dataclass
+from yaml import load, Loader
+
+import settings
 
 
 class Config(object):
@@ -59,3 +68,51 @@ class IterJ:
 
     def __getitem__(self, key):
         return IterJ(self.obj[key])
+
+
+class Logger:
+    """
+    Handle logging info
+    """
+
+    def __init__(self, logger_name):
+        self.root_logger = logger_name.split(".")[0]
+        self.logger_name = logger_name
+        self.logger = logging.getLogger(self.logger_name)
+        self.logger.setLevel(logging.DEBUG)
+        self.logging_settings = settings.LOGGING
+        self.create_handlers()
+
+    @staticmethod
+    def create_formatter(formatter_info):
+        formatter = logging.Formatter(formatter_info["format"])
+        return formatter
+
+    def create_handlers(self):
+        handlers = self.logging_settings["loggers"][self.root_logger]["handlers"]
+        for handler in handlers:
+            handler_info = self.logging_settings["handlers"][handler]
+            handler_instance = handler_info["cls"]()
+            handler_instance.setLevel(handler_info["level"])
+            
+            formatter_name = handler_info["formatter"]
+            formatter_info = self.logging_settings["formatters"][formatter_name]
+            formatter = self.create_formatter(formatter_info)
+
+            handler_instance.setFormatter(formatter)
+            self.logger.addHandler(handler_instance)
+    
+    def debug(self, msg):
+        self.logger.debug(msg)
+    
+    def info(self, msg):
+        self.logger.info(msg)
+
+    def warning(self, msg):
+        self.logger.warning(msg)
+    
+    def error(self, msg):
+        self.logger.error(msg)
+
+    def critical(self, msg):
+        self.logger.critical(msg)
