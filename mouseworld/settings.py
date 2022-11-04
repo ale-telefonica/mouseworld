@@ -53,7 +53,7 @@ LOGGING = {
             'format': '%(asctime)s - %(name)s - %(process:d)s - %(levelname)s - %(message)s',
         },
         'simple': {
-            'format': '%(levelname)s - %(message)s',
+            'format': '%(name)s - %(levelname)s - %(message)s',
         },
     },
     'handlers': {

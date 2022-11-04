@@ -33,7 +33,7 @@ import click
 
 import settings
 from loader import PackageTool
-# from _osmclientv2 import OSMClient
+from _osmclientv2 import OSMClient
 # from _osmclient import OSMClient
 from os_client import OpenstackClient
 from utils import Config, Logger
@@ -176,5 +176,5 @@ def list_scenarios():
 
 if __name__ == '__main__':
     if settings.LOGGING_ACTIVATED:
-        logger = Logger("mouseworld")
+        mw_logger = Logger("mouseworld")
     cli_mw()
