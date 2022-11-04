@@ -24,7 +24,6 @@
 
 from yaml import load, Loader
 import os
-import glob
 import click
 import pickle
 
@@ -37,11 +36,31 @@ from utils import Config
 import settings
 
 
+def load_scenario(scenario):
+    """
+    Load already built scenario
+    """
+    path = os.path.join(settings.TEMP_DIR, scenario)
+    if os.path.exists(path):
+        with open(path, "rb") as package_fd:
+            pkg = pickle.load(package_fd)
+    return pkg
+
+def load_config(
+    osm_config_file=settings.OSM_ACCESS_FILE,
+    os_config_file=settings.OS_ACCESS_FILE
+    ):
+    """Load osm and openstack access credentials and validate config files"""
+    osm_config = Config(osm_config_file, _type="OSM")
+    os_config = Config(os_config_file, _type='Openstack')
+    return osm_config, os_config
+
 @click.group()
 @click.pass_context
 @click.option("--scenario", required=True, type=str, help="Name of the scenario template to build (Template must exist in templates/scenarios folder)")
 def cli_mw(ctx, scenario):
     ctx.obj["scenario"] = scenario
+
 
 @cli_mw.command(short_help="Build scenario template")
 @click.pass_context
@@ -54,85 +73,84 @@ def build(ctx):
         ctx.obj["pkg"] = pkg
         with open(os.path.join(settings.TEMP_DIR, scenario), "wb") as package_fd:
             pickle.dump(pkg, package_fd)
-    except FileNotFoundError:
-        raise(f"Scenario {scenario} has not been constructed")
+    except FileNotFoundError as exc:
+        print(f"Scenario {scenario} has not been constructed")
+        raise exc
     except Exception as error:
         pkg.clean_scenario_folder()
-        raise(error.args)
+        raise error
 
-def load_scenario(scenario):
-    path = os.path.join(settings.TEMP_DIR, scenario)
-    if os.path.exists(path):
-        with open(path, "rb") as package_fd:
-            pkg = pickle.load(package_fd)
-        os.remove(path)
-    return pkg
 
 @cli_mw.command(short_help="Deploy already build scenario")
-@click.option("--create-vim/--no-create-vim", default=True, help="Create VIM conecction if it does not exist")
 @click.pass_context
-def deploy(
-    ctx,
-    create_vim,
-    osm_config_file=settings.OSM_ACCESS_FILE,
-    os_config_file=settings.OS_ACCESS_FILE,
-):
+def deploy(ctx):
+    """Deploy already build scenario"""
+
     scenario = ctx.obj['scenario']
-
     pkg = load_scenario(scenario)
-    pkg.create_project_pkgs()
-    
-    # Load osm and openstack access credentials and validate config files
-    osm_config = Config(osm_config_file, _type="OSM")
-    os_config = Config(os_config_file, _type='Openstack')
+    osm_config, os_config = load_config()
 
-    # Create osmclient instance
+    # Create osm client instance
     osm_client = OSMClient(osm_config)
-    
+
     # Create openstack client instance
     os_client = OpenstackClient(**os_config.config)
     os_client.connect()
-    
+
     # Check VIM conection
     vim_name = os_config.OS_PROJECT_NAME
     osm_client.vim.create(os_config)
 
-    for sw_image in pkg.images:
-        if not os_client.image_exists(sw_image):
-            print(f'Image {sw_image} does not exist on VIM and need to be uploaded')
-            # Check if image exist inside the scenario/<scenario>/image folder
-            image_path = image_is_available(sw_image)
-            if image_path:
-                print("Uploading image, this process could take a while.")
-                img_obj = os_client.create_new_image(sw_image, image_path[0])
-            else:
-                raise(Exception(f"Image {sw_image} not found in image folder"))
+    # Check if image is available in VIM
+    os_client.check_images(pkg.images)
 
     # Create VNFD package
-    for vnfpkg in pkg.vnfpkgs:
-        vnfdid =osm_client.vnfd.create(vnfpkg)
-        
-    # Create NSD package
-    nsd_name = osm_client.nsd.create(pkg.nspkg)
+    for vnfpkg in pkg.scenario_vnf_paths:
+        osm_client.vnfd.create(vnfpkg)
 
+    # Create NSD package
+    nsd_name = osm_client.nsd.create(pkg.scenario_ns_path)
+    
     # Instantiate NS
-    osm_client.ns.create(scenario, vim_name)
-        
+    osm_client.ns.create(nsd_name, scenario, vim_name)
+
     if pkg.mirroring:
         print("Creating Mirroring...")
         list(map(os_client.create_mirror, pkg.mirror))
 
     # Close clients conections
-    osm_client.close()
     os_client.close()
 
-def image_is_available( image ):
-    image_path = glob.glob(os.path.join(settings.IMAGES_DIR, image+"*"))
-    return image_path
+    print("[!] Finish")
+    
+@cli_mw.command(short_help="Destroy scenario")
+@click.pass_context
+def destroy(ctx):
+    """Destroy deployed scenario"""
+    scenario = ctx.obj['scenario']
+    path = os.path.join(settings.TEMP_DIR, scenario)
+    pkg = load_scenario(scenario)
+    osm_config, _ = load_config()
+    osm_client = OSMClient(osm_config)
+
+    # Delete ns instance
+    osm_client.ns.delete(scenario, wait=True)
+
+    # Delete ns descriptor
+    osm_client.nsd.delete(os.path.basename(pkg.scenario_ns_path))
+
+    # Delete vnf descriptors
+    for vnfpkg in pkg.scenario_vnf_paths:
+        osm_client.vnfd.delete(os.path.basename(vnfpkg))
+    
+    # Remove scenario configuration
+    os.remove(path)
+
 
 # def destroy(scenario):
 #     # Delete network service from OSM
 #     nslcm_id = osm_client.get_id(scenario, "nslcm")
+
 
 if __name__ == '__main__':
     cli_mw(obj={})

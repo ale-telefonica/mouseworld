@@ -2,15 +2,20 @@ from yaml import load, Loader
 import settings
 from dataclasses import dataclass
 
+
 class Config(object):
     def __init__(self, config_file, _type=None):
         self.type = _type
-        with open(config_file) as configfd:
+        with open(config_file, encoding="utf-8") as configfd:
             self.config = load(configfd, Loader)
 
         self.validate_config_file()
 
     def validate_config_file(self):
+        """
+        Validate if OSM or Openstack configurtation have the correct
+        key params acording with settings file
+        """
         if self.type == "OSM":
             validator = settings.OSM_ACCESS_FILE_FILEDS
         elif self.type == "Openstack":
@@ -18,11 +23,12 @@ class Config(object):
         for key in self.config:
             if key not in validator:
                 raise(Exception(
-                    f"{self.type} configuration file fields are incorrect. Please fix it using de fields specified in settings."))
+                    f"{self.type} configuration file fields are incorrect. Please fix it using de format specified in settings."))
         return True
 
     def __getattr__(self, __name: str):
         return self.config[__name]
+
 
 @dataclass
 class IterJ:
@@ -37,7 +43,7 @@ class IterJ:
 
     To access the final result the value attribute must be called
     Example: iterj.key.i1.key.obj
-    
+
     :param: obj: Json object to traverse
     """
     obj: dict

@@ -2,16 +2,15 @@ import os
 import glob
 import shutil
 import tarfile
-import yaml
 from os.path import getmtime, join
-from yaml import load, Loader
+from yaml import load, Loader, safe_dump
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 
 from settings import SCENARIOS_DIR, TEMPLATES_DIR
 
 
 class Charm(object):
-
+    """Class to create a charm"""
     def __init__(self, environ, vnf_path, charm_info):
         self.env = environ
         self.vnf_path = vnf_path
@@ -25,12 +24,13 @@ class Charm(object):
         self.setup()
 
     def write_to_file(self):
+        """Parse descriptor files file"""
         # Parse actions.yaml file
-        with open(os.path.join(self.charm_dir, "actions.yaml"), 'w') as charm_action_file:
+        with open(os.path.join(self.charm_dir, "actions.yaml"), 'w', encoding="utf-8") as charm_action_file:
             charm_action_file.write(self.actions.render(self.variables))
         
         # Parse charms.yaml file
-        with open(os.path.join(self.charm_dir, "src", "charm.py"), 'w') as charm_script:
+        with open(os.path.join(self.charm_dir, "src", "charm.py"), 'w', encoding="utf-8") as charm_script:
             charm_script.write(self.proxycharm.render(self.variables))
 
     def setup(self,):
@@ -70,10 +70,10 @@ class MouseworldLoader(BaseLoader):
         elif len(path) == 0:
             raise TemplateNotFound(template)
         else:
-            raise Exception("Multiple files found for {}".format(template))
+            raise Exception(f"Multiple files found for {template}")
         mtime = getmtime(path)
-        with open(path) as f:
-            source = f.read()
+        with open(path, encoding="utf-8") as file:
+            source = file.read()
         return source, path, lambda: mtime == getmtime(path)
 
 
@@ -90,11 +90,17 @@ class PackageTool(object):
         self.cloud_init = self.env.get_template("cloud_init.txt.j2")
         self.scenario_descriptor = load(self.env.get_template(f"{self.scenario}.yaml").render(), Loader)
 
+        self.vnfs2 = []
+        self.images = set()
+        self.nsd_path = join(self.scenario_ns_path, f'{self.scenario}_nsd.yaml' )
+        self.vnfd_paths = set()
+        self.mirroring = False
+        self.vnfs = self.scenario_descriptor['VNFs']
+
     def build_scenario(self):
         # Init variables
         name = self.scenario
-        self.mirroring = False
-        self.vnfs = self.scenario_descriptor['VNFs']
+        
         cloudinit = self.scenario_descriptor['CloudInit']
         self.external_networks = [ n['id'] for n in self.scenario_descriptor['Networks'] if n['type'] == "external"]
         internal_networks = [ n['id'] for n in self.scenario_descriptor['Networks'] if n['type'] == "internal"]
@@ -103,10 +109,7 @@ class PackageTool(object):
         vdus = self.scenario_descriptor['Instances']
         vdus2 = []
         charms = []
-        self.vnfs2 = []
-        self.images = set()
-        self.nsd_path = join(self.scenario_ns_path, f'{self.scenario}_nsd.yaml' )
-        self.vnfd_paths = set()
+        
         if 'Charms' in self.scenario_descriptor:
             charms = self.scenario_descriptor['Charms']
         
@@ -161,7 +164,7 @@ class PackageTool(object):
                     cloud_init_extra = cloud_init_info.copy()
                     cloud_init_extra.pop("username")
                     content = self.cloud_init.render({"hostname": vdu['id']})
-                    extra = yaml.safe_dump(cloud_init_extra)
+                    extra = safe_dump(cloud_init_extra)
                     
                     content = content + "\n" + extra
 
@@ -227,6 +230,7 @@ class PackageTool(object):
                     'dest':f"{flow['service']['instance_id']}_{flow['service']['network_id']}",
                     "direction": flow['direction']}
                     )
+        
         # Clean variable to save progress in serialized file
         self.clean_to_serialize()
         
@@ -255,16 +259,16 @@ class PackageTool(object):
         for folder in folders:
             os.makedirs(join(SCENARIOS_DIR, folder), exist_ok=True)
 
-    def make_tarfile(self, output_filename, source_dir):
-        with tarfile.open(output_filename, "w:gz") as tar:
-            tar.add(source_dir, arcname=os.path.basename(source_dir))
-        return output_filename
+    # def make_tarfile(self, output_filename, source_dir):
+    #     with tarfile.open(output_filename, "w:gz") as tar:
+    #         tar.add(source_dir, arcname=os.path.basename(source_dir))
+    #     return output_filename
 
-    def create_project_pkgs(self):
-        self.vnfpkgs = []
-        for vnf in self.scenario_vnf_paths:
-            self.vnfpkgs.append(self.make_tarfile(vnf+'.tar.gz', vnf))
-        self.nspkg = self.make_tarfile(self.scenario_ns_path+'.tar.gz', self.scenario_ns_path)
+    # def create_project_pkgs(self):
+    #     self.vnfpkgs = []
+    #     for vnf in self.scenario_vnf_paths:
+    #         self.vnfpkgs.append(self.make_tarfile(vnf+'.tar.gz', vnf))
+    #     self.nspkg = self.make_tarfile(self.scenario_ns_path+'.tar.gz', self.scenario_ns_path)
 
 
 
