@@ -43,7 +43,10 @@ def load_scenario(scenario):
     """
     path = os.path.join(settings.TEMP_DIR, scenario)
     if not os.path.exists(path):
-        return None
+        print(f"""[!] Scenario {scenario} have not been built.\nBuild it using command:
+        <mouseworld.py build --scenario {scenario}>
+        """)
+        exit()
     with open(path, "rb") as package_fd:
         pkg = pickle.load(package_fd)
     return pkg
@@ -87,6 +90,7 @@ def deploy(scenario):
     """Deploy already build scenario"""
 
     pkg = load_scenario(scenario)
+
     osm_config, os_config = load_config()
 
     # Create osm client instance
@@ -127,11 +131,12 @@ def deploy(scenario):
 @click.option("--scenario", "-s", required=True, type=str, help="Name of the scenario to destroy")
 def destroy(scenario):
     """Destroy deployed scenario"""
+    pkg = load_scenario(scenario)
+
     print(f"[!] Destroying scenario {scenario}")
     path = os.path.join(settings.TEMP_DIR, scenario)
-    pkg = load_scenario(scenario)
-    if not pkg:
-        print(f"  Scenario {scenario} have not been built")
+    
+
     osm_config, _ = load_config()
     osm_client = OSMClient(osm_config)
 
@@ -147,6 +152,7 @@ def destroy(scenario):
 
     # Remove scenario configuration
     os.remove(path)
+    print(f"[!] Destroyed scenario <{scenario}>")
 
 
 @click.command(help="List scenarios")
@@ -156,11 +162,12 @@ def list_scenarios():
     """
     print("Scenarios:")
     scenarios = list(filter(lambda x: not x.endswith(".txt"),
-                       glob.glob(os.path.join(settings.TEMP_DIR, "*"))))
+                            glob.glob(os.path.join(settings.TEMP_DIR, "*"))))
     if not scenarios:
         print("  Not scenarios have been built")
     for scenario in scenarios:
         print("- ", os.path.basename(scenario).strip(".yaml"))
+
 
 cli_mw.add_command(list_scenarios)
 

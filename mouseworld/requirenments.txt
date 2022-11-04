@@ -1,4 +1,4 @@
-osmclient
+pycurl
 requests
 pyyaml
 openstackclient
