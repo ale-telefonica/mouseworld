@@ -173,12 +173,12 @@ class OpenstackClient:
     @http("network")
     # This request goes over http not standard openstack sdk calls
     def tap_service(self):
-        return api.Tap_Service(self.http_handler)
+        return api.TapService(self.http_handler)
 
     @http("network")
     # This request goes over http not standard openstack sdk calls
     def tap_flow(self):
-        return api.Tap_Flow(self.http_handler)
+        return api.TapFlow(self.http_handler)
 
     def close(self):
         self.conn.close()

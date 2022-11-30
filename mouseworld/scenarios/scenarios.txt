@@ -1,1 +1,1 @@
-Scenarios file
+Scenarios folder

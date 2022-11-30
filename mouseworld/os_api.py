@@ -5,7 +5,7 @@
 # Openstack API interaction
 from schema import SCHEMA
     
-class Tap_Service(SCHEMA, object):
+class TapService(SCHEMA, object):
     """
     TAAS_Service schema class
     Class that contains the specific endpoints
@@ -28,7 +28,7 @@ class Tap_Service(SCHEMA, object):
     CREATE_SCHEMA = "taas/tap_services"
 
 
-class Tap_Flow(SCHEMA, object):
+class TapFlow(SCHEMA, object):
     """
     TAAS_Flow schema class
     Class that contains the specific endpoints

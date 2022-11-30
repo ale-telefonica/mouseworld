@@ -13,6 +13,9 @@ import settings
 
 
 class Config(object):
+    """
+    Load and validate configuration
+    """
     def __init__(self, config_file, _type=None):
         self.type = _type
         with open(config_file, encoding="utf-8") as configfd:
@@ -60,10 +63,10 @@ class IterJ:
     def __getattr__(self, key):
         if isinstance(self.obj, list):
             value = self.obj[int(key[1])]
-        elif isinstance(self.obj, str) and key != "value":
-            return self.obj
-        else:
+        elif isinstance(self.obj, dict):
             value = self.obj[key]
+        else:
+            return self.obj
         return IterJ(value)
 
     def __getitem__(self, key):
