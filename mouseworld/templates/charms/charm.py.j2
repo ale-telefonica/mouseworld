@@ -20,7 +20,7 @@ class SampleProxyCharm(SSHProxyCharm):
         {% for action in actions %}
         self.framework.observe(self.on.{{ action.name }}_action, self.on_{{ action.name }})
         {%endfor%}
-
+        
     def on_config_changed(self, event):
         """Handle changes in configuration"""
         super().on_config_changed(event)
@@ -35,7 +35,7 @@ class SampleProxyCharm(SSHProxyCharm):
 
     {% for action in actions %}
     {# Configure charm specific action here #}
-    ...
+    
     def on_{{ action.name }}(self, event):
         """Configure remote action."""
 

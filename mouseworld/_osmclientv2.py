@@ -21,7 +21,6 @@ from osmclient.client import Client
 
 class Type(Enum):
     """Artifacts Types"""
-
     NSD = "nsd"
     VNFD = "vnfd"
     VIM = "vim"
@@ -34,7 +33,7 @@ class Artifact(ABC):
     """Template base class that defines NSD, VNFD, NS, VIMS, etc
 
     :param conn: Object of type osmclient.client.Client
-    :param artifact_type: Object of type Type that will be use to create the artifact object
+    :param artifact_type: Object of type Type that will be use to identify the artifact object
     """
     conn: Client
     artifact_type: Type
