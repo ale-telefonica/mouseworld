@@ -34,6 +34,18 @@ pip install -r requirenments.txt
 
 2. The scenario template must be created under the **scenarios** directory, following the sintax of the example template *general_template.yaml*, located inside the **/templates/scenarios** folder.
 
+## Components
+
+1. mouseworld.py: Command line interface of the program
+2. loader.py: Reads the initial config and parse the osm descriptors
+3. settings.py: Contains the default settings of the program
+4. _osmclientv2.py: Interacts with OSM using the osmclient tool
+5. os_client.py: Interacts with Openstack using the openstackclient sdk tool.
+6. templates: Folder that contains all the generic templates for the instatiation
+7. scenarios: Folder that stores the scenarios config files built with the tool
+8. config: Folder that contains the Openstack and OSM access credentials
+9. images: In this folder must be stored an images that is not present in Openstack and wants to be uploaded.
+
 ## Usage
 
 ```
